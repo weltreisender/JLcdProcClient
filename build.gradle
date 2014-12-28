@@ -1,0 +1,19 @@
+buildscript {
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+apply plugin: 'java'
+
+dependencies {
+
+	compile   (group: 'io.netty', name:'netty-all', version:'4.0.24.Final')
+}
+
+apply plugin: 'eclipse'
