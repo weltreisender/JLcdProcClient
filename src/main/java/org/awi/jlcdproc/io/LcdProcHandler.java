@@ -3,13 +3,13 @@ package org.awi.jlcdproc.io;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 
 import org.awi.jlcdproc.events.ConnectEvent;
 import org.awi.jlcdproc.events.ErrorEvent;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.IgnoreEvent;
 import org.awi.jlcdproc.events.ListenEvent;
+import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.events.SuccessEvent;
 
 public class LcdProcHandler extends ChannelDuplexHandler implements
@@ -53,6 +53,10 @@ public class LcdProcHandler extends ChannelDuplexHandler implements
 		}  else if ((parameters = parseEventString(eventString, "ignore")) != null) {
 			
 			event = new IgnoreEvent(parameters);
+		}  else if ((parameters = parseEventString(eventString, "menuevent")) != null) {
+			
+			System.out.println(eventString);
+			event = new MenuEvent(parameters);
 		} else {
 			
 			throw new RuntimeException("Unknown event: " + eventString);

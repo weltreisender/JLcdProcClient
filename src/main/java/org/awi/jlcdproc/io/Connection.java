@@ -35,7 +35,7 @@ public class Connection implements Closeable {
 
 	private Channel channel;
 
-	private ConcurrentLinkedQueue<EventListener<? extends Event>> eventListeners = new ConcurrentLinkedQueue<>();
+	private ConcurrentLinkedQueue<EventListener> eventListeners = new ConcurrentLinkedQueue<>();
 
 	private Bootstrap bootstrap;
 
@@ -77,7 +77,7 @@ public class Connection implements Closeable {
 
 		String command = "hello\n";
 
-		ConnectEvent connectEvent = execute(command, ConnectEvent.class);
+		ConnectEvent connectEvent = (ConnectEvent) execute(command, ConnectEvent.class);
 		if (connectEvent == null) {
 			
 			throw new LcdProcConnectException();
@@ -85,15 +85,15 @@ public class Connection implements Closeable {
 		System.out.println(connectEvent);
 	}
 
-	private <T extends Event> T execute(String command, Class<? extends T> expectedEvent) {
+	private Event execute(String command, Class<? extends Event> expectedEvent) {
 
-		CommandCompletedListener<T> listener = new CommandCompletedListener<>(expectedEvent);
+		CommandCompletedListener listener = new CommandCompletedListener(expectedEvent);
 		addEventListener(listener);
 
 		channel.writeAndFlush(command);
 
 		ExecutorService executorService = Executors.newCachedThreadPool();
-		Future<T> future = executorService.submit(listener);
+		Future<Event> future = executorService.submit(listener);
 
 		try {
 
@@ -108,21 +108,21 @@ public class Connection implements Closeable {
 		}
 	}
 
-	public void addEventListener(EventListener<? extends Event> eventListener) {
+	public void addEventListener(EventListener eventListener) {
 
 		eventListeners.add(eventListener);
 	}
 
-	public void removeEventListener(EventListener<? extends Event> eventListener) {
+	public void removeEventListener(EventListener eventListener) {
 
 		eventListeners.remove(eventListener);
 	}
 
 	public void fireEvent(Event event) {
 
-		for (EventListener<? extends Event> eventListener : eventListeners) {
+		for (EventListener eventListener : eventListeners) {
 
-			eventListener.onCheckedEvent(event);
+			eventListener.onEvent(event);
 		}
 	}
 
@@ -137,11 +137,17 @@ public class Connection implements Closeable {
 				Object[] objects = (Object[])arg;
 				for (Object object : objects) {
 					
-					sb.append(object).append(" ");
+					if (object != null) {
+						
+						sb.append(object).append(" ");
+					}
 				}
 			} else {
 				
-				sb.append(arg).append(" ");
+				if (arg != null) {
+					
+					sb.append(arg).append(" ");
+				}
 			}
 		}
 		
@@ -149,7 +155,7 @@ public class Connection implements Closeable {
 		
 		sb.append("\n");
 
-		FunctionEvent event = execute(sb.toString(), FunctionEvent.class);
+		FunctionEvent event = (FunctionEvent) execute(sb.toString(), FunctionEvent.class);
 
 		if (event == null) {
 			

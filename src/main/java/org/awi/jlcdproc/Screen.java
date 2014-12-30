@@ -1,20 +1,23 @@
 package org.awi.jlcdproc;
 
+import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.StateEvent;
 import org.awi.jlcdproc.io.Connection;
 import org.awi.jlcdproc.widgets.Backlight;
 import org.awi.jlcdproc.widgets.Cursor;
+import org.awi.jlcdproc.widgets.FrameWidget;
 import org.awi.jlcdproc.widgets.HBarWidget;
 import org.awi.jlcdproc.widgets.Heartbeat;
 import org.awi.jlcdproc.widgets.IconWidget;
+import org.awi.jlcdproc.widgets.NumWidget;
 import org.awi.jlcdproc.widgets.Priority;
 import org.awi.jlcdproc.widgets.ScrollerWidget;
 import org.awi.jlcdproc.widgets.StringWidget;
 import org.awi.jlcdproc.widgets.TitleWidget;
 import org.awi.jlcdproc.widgets.VBarWidget;
 
-public class Screen extends EventListener<StateEvent>{
+public class Screen implements EventListener {
 
 	private static final String SCREEN_ADD = "screen_add";
 
@@ -37,8 +40,6 @@ public class Screen extends EventListener<StateEvent>{
 
 	public Screen(Connection connection, String screenId) throws Exception {
 
-		super(StateEvent.class);
-		
 		this.connection = connection;
 		this.screenId = screenId;
 		
@@ -176,17 +177,44 @@ public class Screen extends EventListener<StateEvent>{
 		return new ScrollerWidget(connection, this, widgetId);
 	}
 	
+	public FrameWidget frameWidget() throws Exception {
+		
+		return frameWidget(Integer.toString(currentWidgetId++));
+	}
+
+	public FrameWidget frameWidget(String widgetId) throws Exception {
+		
+		return new FrameWidget(connection, this, widgetId);
+	}
+	
+	public NumWidget numWidget() throws Exception {
+		
+		return numWidget(Integer.toString(currentWidgetId++));
+	}
+
+	public NumWidget numWidget(String widgetId) throws Exception {
+		
+		return new NumWidget(connection, this, widgetId);
+	}
+	
 	public String getScreenId() {
 
 		return screenId;
 	}
 
 	@Override
-	public void onEvent(StateEvent event) {
+	public void onEvent(Event event) {
 
-		if (event.getScreenId().equals(screenId)) {
+		if (!(event instanceof StateEvent)) {
 			
-			state = event.isActive() ? ScreenState.ACTIVE : ScreenState.INACTIVE;
+			return;
+		}
+		
+		StateEvent stateEvent = (StateEvent) event;
+		
+		if (stateEvent.getScreenId().equals(screenId)) {
+			
+			state = stateEvent.isActive() ? ScreenState.ACTIVE : ScreenState.INACTIVE;
 		}
 	}
 }
