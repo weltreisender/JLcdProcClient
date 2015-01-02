@@ -8,7 +8,7 @@ public class MainMenu extends Menu {
 	
 	public MainMenu(Connection connection, String clientName) {
 		
-		super(connection, null, "", "main");
+		super(connection, null, "_client_menu_", "main");
 		
 		this.clientName = clientName;
 	}

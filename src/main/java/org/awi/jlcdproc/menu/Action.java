@@ -17,9 +17,9 @@ public class Action extends MenuItem {
 	}
 
 	@Override
-	Object[] getMenuItemArguments() throws Exception {
+	void collectMenuItemOptions(MenuOptions options) throws Exception {
 
-		return new Object[] {option("-menu_result", menuResult)};
+		options.add("-menu_result", menuResult);
 	}
 
 	public Action menuResult(MenuResult menuResult) {

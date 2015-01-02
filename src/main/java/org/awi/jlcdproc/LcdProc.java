@@ -1,18 +1,21 @@
 package org.awi.jlcdproc;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
-import org.awi.jlcdproc.events.SuccessEvent;
+import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.io.Connection;
 import org.awi.jlcdproc.menu.Action;
+import org.awi.jlcdproc.menu.Alpha;
+import org.awi.jlcdproc.menu.Alpha.Allowed;
+import org.awi.jlcdproc.menu.Checkbox;
 import org.awi.jlcdproc.menu.MainMenu;
-import org.awi.jlcdproc.menu.Menu;
-import org.awi.jlcdproc.widgets.Direction;
+import org.awi.jlcdproc.menu.MenuResult;
+import org.awi.jlcdproc.menu.Numeric;
+import org.awi.jlcdproc.menu.Ring;
+import org.awi.jlcdproc.menu.Slider;
 import org.awi.jlcdproc.widgets.Heartbeat;
-import org.awi.jlcdproc.widgets.ScrollerWidget;
 
 public class LcdProc implements AutoCloseable {
 
@@ -67,64 +70,104 @@ public class LcdProc implements AutoCloseable {
 
 			Screen s = lcdProc.screen();
 			s.setHeartbeat(Heartbeat.OFF);
-			
-			MainMenu mainMenu = lcdProc.mainMenu("Main menu");
-			
-			lcdProc.addEventListener((Event event) -> { if (!(event instanceof SuccessEvent)) {System.out.println(event); } });
 
-			Menu menu1 = mainMenu.addMenu("m1", "Menu 1");
-			Action a11 = menu1.addAction("a11", "Action 1.1");
-			Action a12 = menu1.addAction("a12", "Action 1.2");
-			Action a13 = menu1.addAction("a13", "Action 1.3");
+			// MainMenu mainMenu = lcdProc.mainMenu("Main menu");
+			//
+			// lcdProc.addEventListener((Event event) -> {
+			// if (!(event instanceof SuccessEvent)) {
+			// System.out.println(event);
+			// }
+			// });
+			//
+			// Menu menu1 = mainMenu.addMenu("m1", "Menu 1");
+			AtomicBoolean exit = new AtomicBoolean(false);
 
-			a11.next(a12);
-			a12.prev(a11).next(a13);
-			a13.prev(a12);
+			MainMenu mainnMenu = lcdProc.mainMenu("Main menu");
 			
-			Menu menu2 = mainMenu.addMenu("m2", "Menu 2");
-			menu2.addAction("a21", "Action 2.1");
-			menu2.addAction("a22", "Action 2.2");
-			menu2.addAction("a23", "Action 2.3");
+			Action a11 = mainnMenu.addAction("a11", "exit").menuResult(MenuResult.QUIT);
+			a11.addEventListener((MenuEvent event) -> {
+				System.out.println(((Action) event.getMenuItem()).getName());
+				exit.set(true);
+			});
 
+			Checkbox c12 = mainnMenu.addCheckbox("c12", "Checkbox", Checkbox.Value.GRAY).allowGray(true);
+			c12.addEventListener((MenuEvent event) -> {
+				System.out.println(((Checkbox) event.getMenuItem()).getSelectedValue());
+			});
+
+			Ring r13 = mainnMenu.addRing("r13", "Ring", 1, "#####", "=====", "/////");
+			r13.addEventListener((MenuEvent event) -> {
+				System.out.println(((Ring) event.getMenuItem()).getSelectedValue());
+			});
+
+			Slider s14 = mainnMenu.addSlider("s14", "Slider")
+					.minValue(-50)
+					.maxValue(50)
+					.minText("min")
+					.maxText("max")
+					.stepSize(5)
+					.value(0);
+			s14.addEventListener((MenuEvent event) -> {
+				System.out.println(((Slider) event.getMenuItem()).getValue());
+			});
 			
-//		
-//			for (int b = 0; b < 32; b++) {
-//
-//				StringBuilder sb = new StringBuilder();
-//				sb.append(b).append(": <");
-//				switch(b) {
-//				
-//				case 0:
-//					sb.append("nul");
-//					break;
-//				case 10:
-//					sb.append("lf");
-//					break;
-//				case 13:
-//					sb.append("cr");
-//					break;
-//				case 34:
-//					sb.append("\\\"");
-//					break;
-//				case 92:
-//					sb.append("\\\\");
-//					break;
-//				default:	
-//					sb.append(new String(new byte[] {(byte)(b & (byte)0xFF)}));
-//					break;
-//				}
-//				
-//				sb.append("> ");
-//				
-//				mainMenu.addAction(String.format("a%d", b), sb.toString());
-//				
-//			}
+			Numeric n15 = mainnMenu.addNumeric("n15", "Numeric").minValue(-100).maxValue(99999999).value(10000);
+			n15.addEventListener((MenuEvent event) -> {
+				System.out.println(((Numeric) event.getMenuItem()).getValue());
+			});
+
+			Alpha a16 = mainnMenu.addAlpha("a16", "Alpha").allow(Allowed.CAPS);//.allow("abc");
+			a16.addEventListener((MenuEvent event) -> {
+				System.out.println(((Alpha) event.getMenuItem()).getValue());
+			});
 			
+			
+			
+			// a11.next(c12);
+			// c12.prev(a11).next(r13);
+			// r13.prev(c12);
+			//
+			//
+			// for (int b = 0; b < 32; b++) {
+			//
+			// StringBuilder sb = new StringBuilder();
+			// sb.append(b).append(": <");
+			// switch(b) {
+			//
+			// case 0:
+			// sb.append("nul");
+			// break;
+			// case 10:
+			// sb.append("lf");
+			// break;
+			// case 13:
+			// sb.append("cr");
+			// break;
+			// case 34:
+			// sb.append("\\\"");
+			// break;
+			// case 92:
+			// sb.append("\\\\");
+			// break;
+			// default:
+			// sb.append(new String(new byte[] {(byte)(b & (byte)0xFF)}));
+			// break;
+			// }
+			//
+			// sb.append("> ");
+			//
+			// mainMenu.addAction(String.format("a%d", b), sb.toString());
+			//
+			// }
+
 			// ScrollerWidget widget = s.scrollerWidget();
 			// widget.set(1, 1, 16, 1, Direction.MARQUEE, 1, sb.toString());
-			mainMenu.activate();
-			
-			System.in.read();
+			mainnMenu.activate();
+
+			while (!exit.get()) {
+
+				Thread.sleep(50);
+			}
 		}
 	}
 

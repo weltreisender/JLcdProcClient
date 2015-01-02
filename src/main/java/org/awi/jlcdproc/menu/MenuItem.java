@@ -1,15 +1,28 @@
 package org.awi.jlcdproc.menu;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.awi.jlcdproc.events.Event;
+import org.awi.jlcdproc.events.EventListener;
+import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.io.Connection;
 
-public abstract class MenuItem {
+public abstract class MenuItem implements EventListener {
+
+	private final static String MENU_ADD_ITEM = "menu_add_item";
 
 	private final static String MENU_SET_ITEM = "menu_set_item";
+
+	private final static String MENU_DEL_ITEM = "menu_del_item";
+
+	private final static Map<String, MenuItem> menuItems = new HashMap<>();
 
 	protected final Connection connection;
 
 	protected Menu menu;
-	
+
 	protected final String itemId;
 
 	protected final String name;
@@ -20,31 +33,26 @@ public abstract class MenuItem {
 
 	private Boolean hide = null;
 
+	private final ArrayList<MenuEventListener> eventListeners = new ArrayList<>();
+
 	MenuItem(Connection connection, Menu menu, String itemId, String name) {
+
+		if (menuItems.containsKey(itemId)) {
+
+			throw new IllegalArgumentException("Item ID <" + itemId + "> already in use.");
+		}
 
 		this.menu = menu;
 		this.connection = connection;
 		this.itemId = itemId;
 		this.name = name;
+
+		this.connection.addEventListener(this);
+
+		menuItems.put(itemId, this);
 	}
 
-	public MenuItem prev(MenuItem prev) {
-
-		this.prev = prev;
-		return this;
-	}
-
-	public MenuItem next(MenuItem next) {
-
-		this.next = next;
-		return this;
-	}
-
-	public MenuItem hide(boolean hide) {
-
-		this.hide = hide;
-		return this;
-	}
+	protected abstract String getType();
 
 	public String getItemId() {
 		return itemId;
@@ -67,13 +75,40 @@ public abstract class MenuItem {
 		return hide;
 	}
 
-	protected void menuSet() throws Exception {
+	public MenuItem prev(MenuItem prev) {
+
+		this.prev = prev;
+		return this;
+	}
+
+	public MenuItem next(MenuItem next) {
+
+		this.next = next;
+		return this;
+	}
+
+	public MenuItem hide(boolean hide) {
+
+		this.hide = hide;
+		return this;
+	}
+
+	protected void menuAddItem(String menuId) throws Exception {
+
+		MenuOptions options = new MenuOptions();
+
+		collectMenuItemOptions(options);
+
+		connection.send(MENU_ADD_ITEM, quote(menuId), quote(itemId), getType(), "-text", quote(name), options.optionsAsArray());
+	}
+
+	protected void menuSetItem() throws Exception {
 
 		if (prev == null && next == null && hide == null) {
 
 			return;
 		}
-		
+
 		connection.send(MENU_SET_ITEM,
 				quote(menu.getItemId()),
 				quote(itemId),
@@ -82,15 +117,63 @@ public abstract class MenuItem {
 				option("-is_hidden", hide));
 	}
 
+	protected void menuDeleteItem() throws Exception {
+
+		connection.send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
+	}
+
+	void activate() throws Exception {
+	}
+
+	void collectMenuItemOptions(MenuOptions options) throws Exception {
+	}
+
+	void onEvent(MenuEvent event) {
+	}
+
+	public void addEventListener(MenuEventListener eventListener) {
+
+		eventListeners.add(eventListener);
+	}
+
+	public void removeEventListener(MenuEventListener eventListener) {
+
+		eventListeners.remove(eventListener);
+	}
+
+	@Override
+	public void onEvent(Event event) {
+
+		if (!(event instanceof MenuEvent)) {
+
+			return;
+		}
+
+		MenuEvent menuEvent = (MenuEvent) event;
+
+		String eventItemId = menuEvent.getItemId();
+		if (!eventItemId.equals(itemId)) {
+
+			return;
+		}
+
+		onEvent(menuEvent);
+
+		for (MenuEventListener menuEventListener : eventListeners) {
+
+			menuEventListener.onEvent(new MenuEvent(this, menuEvent));
+		}
+	}
+
 	protected static Object[] option(String option, Object value) {
 
 		if (value != null) {
 
 			if (value instanceof MenuItem) {
-				
-				return new Object[] { option, ((MenuItem)value).getItemId() };
+
+				return new Object[] { option, ((MenuItem) value).getItemId() };
 			} else {
-				
+
 				return new Object[] { option, value };
 			}
 		}
@@ -100,16 +183,9 @@ public abstract class MenuItem {
 
 	protected static String quote(String s) {
 
-		return String.format("\"%s\"", s);
+		String quotedString = s.replace("\"", "\"\"");
+
+		return String.format("\"%s\"", quotedString);
 	}
 
-	void activate() throws Exception {
-	}
-	
-	Object[] getMenuItemArguments() throws Exception {
-
-		return null;
-	}
-	
-	protected abstract String getType();
 }

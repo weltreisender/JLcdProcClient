@@ -6,8 +6,6 @@ import org.awi.jlcdproc.io.Connection;
 
 public class Menu extends MenuItem {
 
-	private final static String MENU_ADD_ITEM = "menu_add_item";
-
 	private ArrayList<MenuItem> menuItems = new ArrayList<>();
 
 	Menu(Connection connection, Menu menu, String itemId, String name) {
@@ -30,24 +28,53 @@ public class Menu extends MenuItem {
 		return action;
 	}
 
+	public Checkbox addCheckbox(String itemId, String name, Checkbox.Value initialValue) {
+		
+		Checkbox checkbox = new Checkbox(connection, this, itemId, name, initialValue);
+		menuItems.add(checkbox);
+		return checkbox;
+	}
+	
+	public Ring addRing(String itemId, String name, int initialValue, String... values) {
+		
+		Ring ring = new Ring(connection, menu, itemId, name, initialValue, values);
+		menuItems.add(ring);
+		return ring;
+	}
+	
+	public Slider addSlider(String itemId, String name) {
+		
+		Slider slider = new Slider(connection, menu, itemId, name);
+		menuItems.add(slider);
+		return slider;
+	}
+	
+	public Numeric addNumeric(String itemId, String name) {
+		
+		Numeric numeric = new Numeric(connection, menu, itemId, name);
+		menuItems.add(numeric);
+		return numeric;
+	}
+	
+	public Alpha addAlpha(String itemId, String name) {
+		
+		Alpha alpha = new Alpha(connection, menu, itemId, name);
+		menuItems.add(alpha);
+		return alpha;
+	}
+
 	void activate() throws Exception {
 
 		for (MenuItem menuItem : menuItems) {
 
-			connection.send(MENU_ADD_ITEM,
-					quote(itemId),
-					quote(menuItem.getItemId()),
-					menuItem.getType(),
-					"-text",
-					quote(menuItem.getName()),
-					menuItem.getMenuItemArguments());
+			menuItem.menuAddItem(itemId);
 
 			menuItem.activate();
 		}
 
 		for (MenuItem menuItem : menuItems) {
 
-			menuItem.menuSet();
+			menuItem.menuSetItem();
 		}
 	}
 
