@@ -113,13 +113,13 @@ public class Alpha extends MenuItem {
 	@Override
 	void collectMenuItemOptions(MenuOptions options) throws Exception {
 
-		options.add("-value", value);
+		options.add("-value", quote(value));
 		options.add("-minlength", minLength);
 		options.add("-maxlength", maxLength);
 		options.add("-password_char", passwordChar);
 		options.add("-allow_caps", allowCaps);
 		options.add("-allow_noncaps", allowNonCaps);
 		options.add("-allow_numbers", allowNumbers);
-		options.add("-allow_extra", allow);
+		options.add("-allow_extra", quote(allow));
 }
 }
