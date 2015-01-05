@@ -37,28 +37,28 @@ public class Menu extends MenuItem {
 	
 	public Ring addRing(String itemId, String name, int initialValue, String... values) {
 		
-		Ring ring = new Ring(connection, menu, itemId, name, initialValue, values);
+		Ring ring = new Ring(connection, this, itemId, name, initialValue, values);
 		menuItems.add(ring);
 		return ring;
 	}
 	
 	public Slider addSlider(String itemId, String name) {
 		
-		Slider slider = new Slider(connection, menu, itemId, name);
+		Slider slider = new Slider(connection, this, itemId, name);
 		menuItems.add(slider);
 		return slider;
 	}
 	
 	public Numeric addNumeric(String itemId, String name) {
 		
-		Numeric numeric = new Numeric(connection, menu, itemId, name);
+		Numeric numeric = new Numeric(connection, this, itemId, name);
 		menuItems.add(numeric);
 		return numeric;
 	}
 	
 	public Alpha addAlpha(String itemId, String name) {
 		
-		Alpha alpha = new Alpha(connection, menu, itemId, name);
+		Alpha alpha = new Alpha(connection, this, itemId, name);
 		menuItems.add(alpha);
 		return alpha;
 	}
@@ -76,6 +76,16 @@ public class Menu extends MenuItem {
 
 			menuItem.menuSetItem();
 		}
+	}
+	
+	public void show() throws Exception {
+		
+		show(null);
+	}
+
+	public void show(Menu parent) throws Exception {
+		
+		connection.send("menu_goto", quote(itemId), parent != null ? parent.getItemId() : null);
 	}
 
 	@Override
