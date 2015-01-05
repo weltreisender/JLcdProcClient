@@ -41,6 +41,8 @@ public class Connection implements Closeable {
 
 	private EventLoopGroup group;
 
+	private ExecutorService executorService = Executors.newCachedThreadPool();
+
 	public Connection() {
 
 	}
@@ -79,33 +81,24 @@ public class Connection implements Closeable {
 
 		ConnectEvent connectEvent = (ConnectEvent) execute(command, ConnectEvent.class);
 		if (connectEvent == null) {
-			
+
 			throw new LcdProcConnectException();
 		}
 		System.out.println(connectEvent);
 	}
 
-	private Event execute(String command, Class<? extends Event> expectedEvent) {
-
-		CommandCompletedListener listener = new CommandCompletedListener(expectedEvent);
-		addEventListener(listener);
-
-		channel.writeAndFlush(command);
-
-		ExecutorService executorService = Executors.newCachedThreadPool();
-		Future<Event> future = executorService.submit(listener);
-
-		try {
-
-			return future.get(500, TimeUnit.MILLISECONDS);
-		} catch (Exception e) {
-
-			return null;
-		} finally {
-
-			removeEventListener(listener);
-			executorService.shutdown();
+	@Override
+	public void close() throws IOException {
+	
+		if (channel != null) {
+	
+			channel.close();
+			channel = null;
 		}
+		executorService.shutdown();
+		group.shutdownGracefully();
+	
+		System.out.println("shutdown");
 	}
 
 	public void addEventListener(EventListener eventListener) {
@@ -121,64 +114,77 @@ public class Connection implements Closeable {
 	public void fireEvent(Event event) {
 
 		for (EventListener eventListener : eventListeners) {
+			
+			executorService.submit(() -> {
 
-			eventListener.onEvent(event);
+				eventListener.onEvent(event);
+			});
 		}
+
 	}
 
-	public void send(Object ... args) throws Exception {
+	public void send(Object... args) throws Exception {
 
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (Object arg : args) {
-			
+
 			if (arg instanceof Object[]) {
 
-				Object[] objects = (Object[])arg;
+				Object[] objects = (Object[]) arg;
 				for (Object object : objects) {
-					
+
 					if (object != null) {
-						
+
 						sb.append(object).append(" ");
 					}
 				}
 			} else {
-				
+
 				if (arg != null) {
-					
+
 					sb.append(arg).append(" ");
 				}
 			}
 		}
-		
+
 		System.out.println(sb.toString());
-		
+
 		sb.append("\n");
 
 		FunctionEvent event = (FunctionEvent) execute(sb.toString(), FunctionEvent.class);
 
 		if (event == null) {
-			
+
 			throw new CommandExecutionException("Command not executed in time");
 		}
 
 		if (!event.isSuccess()) {
-			
+
 			throw new CommandExecutionException(event.toString());
 		}
-		
+
 		System.out.println(event);
 	}
 
-	@Override
-	public void close() throws IOException {
-
-		if (channel != null) {
-
-			channel.close();
-			channel = null;
+	private Event execute(String command, Class<? extends Event> expectedEvent) {
+	
+		CommandCompletedListener listener = new CommandCompletedListener(expectedEvent);
+		addEventListener(listener);
+	
+		channel.writeAndFlush(command);
+	
+		Future<Event> future = executorService.submit(listener);
+	
+		try {
+	
+			return future.get(500, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+	
+			return null;
+		} finally {
+	
+			removeEventListener(listener);
 		}
-		System.out.println("shutdown");
-		group.shutdownGracefully();
 	}
 }
