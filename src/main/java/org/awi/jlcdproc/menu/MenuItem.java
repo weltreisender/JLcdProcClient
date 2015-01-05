@@ -125,6 +125,23 @@ public abstract class MenuItem implements EventListener {
 	void activate() throws Exception {
 	}
 
+	public void update() throws Exception {
+
+		MenuOptions options = new MenuOptions();
+
+		collectMenuItemOptions(options);
+
+		connection.send(MENU_SET_ITEM,
+				quote(menu.getItemId()),
+				quote(itemId),
+				option("-prev", prev),
+				option("-next", next),
+				option("-is_hidden", hide),
+				option("-text", quote(name)),
+				options.optionsAsArray());
+
+	}
+
 	void collectMenuItemOptions(MenuOptions options) throws Exception {
 	}
 
@@ -183,6 +200,11 @@ public abstract class MenuItem implements EventListener {
 
 	protected static String quote(String s) {
 
+		if (s == null) {
+			
+			return null;
+		}
+		
 		String quotedString = s.replace("\"", "\"\"");
 
 		return String.format("\"%s\"", quotedString);
