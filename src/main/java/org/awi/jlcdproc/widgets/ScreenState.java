@@ -1,4 +1,4 @@
-package org.awi.jlcdproc;
+package org.awi.jlcdproc.widgets;
 
 public enum ScreenState {
 

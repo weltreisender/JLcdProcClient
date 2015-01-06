@@ -41,7 +41,7 @@ public class MenuEvent implements Event {
 		this.type = Type.valueOf(params[0].toUpperCase());
 		this.itemId = params[1];
 		
-		value = type.hasValue() ? params[2] : null;
+		value = type.hasValue() ? (params.length == 3 ? params[2] : "") : null;
 	}
 	
 	public MenuEvent(MenuItem menuItem, MenuEvent menuEvent) {

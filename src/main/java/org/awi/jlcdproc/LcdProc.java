@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.MenuEvent;
+import org.awi.jlcdproc.events.MenuEvent.Type;
 import org.awi.jlcdproc.io.Connection;
 import org.awi.jlcdproc.menu.Action;
 import org.awi.jlcdproc.menu.Alpha;
@@ -15,7 +16,9 @@ import org.awi.jlcdproc.menu.MenuResult;
 import org.awi.jlcdproc.menu.Numeric;
 import org.awi.jlcdproc.menu.Ring;
 import org.awi.jlcdproc.menu.Slider;
+import org.awi.jlcdproc.widgets.Backlight;
 import org.awi.jlcdproc.widgets.Heartbeat;
+import org.awi.jlcdproc.widgets.Screen;
 
 public class LcdProc implements AutoCloseable {
 
@@ -32,6 +35,11 @@ public class LcdProc implements AutoCloseable {
 
 		connection = new Connection(host, port);
 		connection.connect();
+	}
+
+	public void close() throws IOException {
+	
+		connection.close();
 	}
 
 	public void clientName(String name) throws Exception {
@@ -59,6 +67,16 @@ public class LcdProc implements AutoCloseable {
 		connection.addEventListener(eventListener);
 	}
 
+	public String info() {
+		
+		return connection.info();
+	}
+	
+	public void backlight(Backlight backlight) throws Exception {
+		
+		connection.send("backlight", backlight);
+	}
+	
 	public void removeEventListener(EventListener eventListener) {
 
 		connection.removeEventListener(eventListener);
@@ -66,7 +84,7 @@ public class LcdProc implements AutoCloseable {
 
 	public static void main(String[] args) throws Exception {
 
-		try (LcdProc lcdProc = new LcdProc()) {
+		try (LcdProc lcdProc = new LcdProc("mediapc", 13666)) {
 
 			Screen s = lcdProc.screen();
 			s.setHeartbeat(Heartbeat.OFF);
@@ -82,25 +100,37 @@ public class LcdProc implements AutoCloseable {
 			// Menu menu1 = mainMenu.addMenu("m1", "Menu 1");
 			AtomicBoolean exit = new AtomicBoolean(false);
 
-			MainMenu mainnMenu = lcdProc.mainMenu("Main menu");
+			MainMenu mainMenu = lcdProc.mainMenu("Main menu");
 			
-			Action a11 = mainnMenu.addAction("a11", "exit").menuResult(MenuResult.QUIT);
+			
+			Action a11 = mainMenu.addAction("exit").menuResult(MenuResult.QUIT);
 			a11.addEventListener((MenuEvent event) -> {
-				System.out.println(((Action) event.getMenuItem()).getName());
+
 				exit.set(true);
 			});
 
-			Checkbox c12 = mainnMenu.addCheckbox("c12", "Checkbox", Checkbox.Value.GRAY).allowGray(true);
+			Checkbox c12 = mainMenu.addCheckbox("Checkbox", Checkbox.Value.GRAY).allowGray(true);
 			c12.addEventListener((MenuEvent event) -> {
 				System.out.println(((Checkbox) event.getMenuItem()).getSelectedValue());
 			});
 
-			Ring r13 = mainnMenu.addRing("r13", "Ring", 1, "#####", "=====", "/////");
+			Action a13 = mainMenu.addAction("del CB");
+			a13.addEventListener((MenuEvent e) -> {
+				
+				try {
+					c12.delete();
+				} catch (Exception e1) {
+				
+					e1.printStackTrace();
+				}
+			});
+			
+			Ring r13 = mainMenu.addRing("Ring", 1, "11111", "22222", "33333");
 			r13.addEventListener((MenuEvent event) -> {
 				System.out.println(((Ring) event.getMenuItem()).getSelectedValue());
 			});
 
-			Slider s14 = mainnMenu.addSlider("s14", "Slider")
+			Slider s14 = mainMenu.addSlider("Slider")
 					.minValue(-50)
 					.maxValue(50)
 					.minText("min")
@@ -111,17 +141,30 @@ public class LcdProc implements AutoCloseable {
 				System.out.println(((Slider) event.getMenuItem()).getValue());
 			});
 			
-			Numeric n15 = mainnMenu.addNumeric("n15", "Numeric").minValue(-100).maxValue(99999999).value(10000);
+			Numeric n15 = mainMenu.addNumeric("Numeric").minValue(-100).maxValue(99999999).value(10000);
 			n15.addEventListener((MenuEvent event) -> {
 				System.out.println(((Numeric) event.getMenuItem()).getValue());
 			});
 
-			Alpha a16 = mainnMenu.addAlpha("a16", "Alpha").allow(Allowed.CAPS);//.allow("abc");
+			Alpha a16 = mainMenu.addAlpha("Alpha").allow(Allowed.NONE).allow("abc#+");
 			a16.addEventListener((MenuEvent event) -> {
+				
+				if (event.getType() == Type.ENTER) {
+					
+					try {
+						a16.value("").update();
+					} catch (Exception e) {
+
+						e.printStackTrace();
+					}
+				}
 				System.out.println(((Alpha) event.getMenuItem()).getValue());
 			});
 			
-			
+			mainMenu.activate();
+			mainMenu.show();
+
+			System.out.println(lcdProc.info());
 			
 			// a11.next(c12);
 			// c12.prev(a11).next(r13);
@@ -162,17 +205,11 @@ public class LcdProc implements AutoCloseable {
 
 			// ScrollerWidget widget = s.scrollerWidget();
 			// widget.set(1, 1, 16, 1, Direction.MARQUEE, 1, sb.toString());
-			mainnMenu.activate();
 
 			while (!exit.get()) {
 
 				Thread.sleep(50);
 			}
 		}
-	}
-
-	public void close() throws IOException {
-
-		connection.close();
 	}
 }

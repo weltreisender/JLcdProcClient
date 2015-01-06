@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.awi.jlcdproc.events.ConnectEvent;
+import org.awi.jlcdproc.events.DriverInfoEvent;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.FunctionEvent;
@@ -148,8 +149,6 @@ public class Connection implements Closeable {
 			}
 		}
 
-		System.out.println(sb.toString());
-
 		sb.append("\n");
 
 		FunctionEvent event = (FunctionEvent) execute(sb.toString(), FunctionEvent.class);
@@ -163,10 +162,15 @@ public class Connection implements Closeable {
 
 			throw new CommandExecutionException(event.toString());
 		}
-
-		System.out.println(event);
 	}
 
+	public String info() {
+		
+		DriverInfoEvent event = (DriverInfoEvent) execute("info\n", DriverInfoEvent.class);
+		
+		return event.getDriverInfo();
+	}
+	
 	private Event execute(String command, Class<? extends Event> expectedEvent) {
 	
 		CommandCompletedListener listener = new CommandCompletedListener(expectedEvent);

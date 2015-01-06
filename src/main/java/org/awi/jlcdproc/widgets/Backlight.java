@@ -8,4 +8,9 @@ public enum Backlight {
 	OPEN,
 	BLINK,
 	FLASH;
+	
+	public String toString() {
+		
+		return name().toLowerCase();
+	}
 }

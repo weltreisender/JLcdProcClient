@@ -120,6 +120,6 @@ public class Alpha extends MenuItem {
 		options.add("-allow_caps", allowCaps);
 		options.add("-allow_noncaps", allowNonCaps);
 		options.add("-allow_numbers", allowNumbers);
-		options.add("-allow_extra", quote(allow));
+		options.add("-allowed_extra", quote(allow));
 }
 }

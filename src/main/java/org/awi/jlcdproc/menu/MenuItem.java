@@ -44,7 +44,7 @@ public abstract class MenuItem implements EventListener {
 
 		this.menu = menu;
 		this.connection = connection;
-		this.itemId = itemId;
+		this.itemId = itemId.replace(" ", "_");
 		this.name = name;
 
 		this.connection.addEventListener(this);
@@ -117,7 +117,7 @@ public abstract class MenuItem implements EventListener {
 				option("-is_hidden", hide));
 	}
 
-	protected void menuDeleteItem() throws Exception {
+	public void delete() throws Exception {
 
 		connection.send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
 	}

@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.awi.jlcdproc.events.ConnectEvent;
+import org.awi.jlcdproc.events.DriverInfoEvent;
 import org.awi.jlcdproc.events.ErrorEvent;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.IgnoreEvent;
@@ -55,8 +56,10 @@ public class LcdProcHandler extends ChannelDuplexHandler implements
 			event = new IgnoreEvent(parameters);
 		}  else if ((parameters = parseEventString(eventString, "menuevent")) != null) {
 			
-			System.out.println(eventString);
 			event = new MenuEvent(parameters);
+		} else if (eventString.endsWith("driver")) {
+			
+			event = new DriverInfoEvent(eventString);
 		} else {
 			
 			throw new RuntimeException("Unknown event: " + eventString);

@@ -1,6 +1,5 @@
 package org.awi.jlcdproc.widgets;
 
-import org.awi.jlcdproc.Screen;
 import org.awi.jlcdproc.io.Connection;
 
 public abstract class BarWidget extends Widget {

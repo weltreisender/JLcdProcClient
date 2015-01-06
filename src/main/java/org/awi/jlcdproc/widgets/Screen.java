@@ -1,21 +1,9 @@
-package org.awi.jlcdproc;
+package org.awi.jlcdproc.widgets;
 
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.StateEvent;
 import org.awi.jlcdproc.io.Connection;
-import org.awi.jlcdproc.widgets.Backlight;
-import org.awi.jlcdproc.widgets.Cursor;
-import org.awi.jlcdproc.widgets.FrameWidget;
-import org.awi.jlcdproc.widgets.HBarWidget;
-import org.awi.jlcdproc.widgets.Heartbeat;
-import org.awi.jlcdproc.widgets.IconWidget;
-import org.awi.jlcdproc.widgets.NumWidget;
-import org.awi.jlcdproc.widgets.Priority;
-import org.awi.jlcdproc.widgets.ScrollerWidget;
-import org.awi.jlcdproc.widgets.StringWidget;
-import org.awi.jlcdproc.widgets.TitleWidget;
-import org.awi.jlcdproc.widgets.VBarWidget;
 
 public class Screen implements EventListener {
 
