@@ -1,11 +1,12 @@
 package org.awi.jlcdproc.widgets;
 
+import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.StateEvent;
 import org.awi.jlcdproc.io.Connection;
 
-public class Screen implements EventListener {
+public class Screen extends Command implements EventListener {
 
 	private static final String SCREEN_ADD = "screen_add";
 
@@ -17,8 +18,6 @@ public class Screen implements EventListener {
 
 	private String screenId;
 	
-	private Connection connection;
-	
 	private int currentWidgetId = 0; 
 	
 	public Screen(Connection connection, int screenId) throws Exception {
@@ -27,13 +26,14 @@ public class Screen implements EventListener {
 	}
 
 	public Screen(Connection connection, String screenId) throws Exception {
+		
+		super(connection);
 
-		this.connection = connection;
 		this.screenId = screenId;
 		
-		connection.addEventListener(this);
+		connection.getLcdProc().addEventListener(this);
 		
-		connection.send(SCREEN_ADD, screenId);
+		send(SCREEN_ADD, screenId);
 	}
 
 	public ScreenState getState() {
@@ -43,7 +43,7 @@ public class Screen implements EventListener {
 	
 	private Screen screenSet(Object ... args) throws Exception {
 		
-		connection.send(SCREEN_SET, screenId, args);
+		send(SCREEN_SET, screenId, args);
 		
 		return this;
 	}
@@ -100,9 +100,9 @@ public class Screen implements EventListener {
 
 	public void delete() throws Exception {
 		
-		connection.removeEventListener(this);
+		connection.getLcdProc().removeEventListener(this);
 		
-		connection.send(SCREEN_DEL, screenId);
+		send(SCREEN_DEL, screenId);
 	}
 	
 	public StringWidget stringWidget() throws Exception {

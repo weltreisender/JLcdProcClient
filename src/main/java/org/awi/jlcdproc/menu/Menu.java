@@ -100,6 +100,11 @@ public class Menu extends MenuItem {
 		return alpha;
 	}
 
+	void delete(MenuItem menuItem) {
+		
+		menuItems.remove(menuItem);
+	}
+	
 	void activate() throws Exception {
 
 		for (MenuItem menuItem : menuItems) {
@@ -122,7 +127,7 @@ public class Menu extends MenuItem {
 
 	public void show(Menu parent) throws Exception {
 		
-		connection.send("menu_goto", quote(itemId), parent != null ? parent.getItemId() : null);
+		send("menu_goto", quote(itemId), parent != null ? parent.getItemId() : null);
 	}
 
 	@Override

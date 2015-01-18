@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-public class ErrorEvent implements FunctionEvent {
+public class ErrorEvent implements CommandResultEvent {
 
 	private final String message;
 

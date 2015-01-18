@@ -2,6 +2,7 @@ package org.awi.jlcdproc.io;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -12,183 +13,168 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.awi.jlcdproc.events.ConnectEvent;
+import org.awi.jlcdproc.LcdProc;
+import org.awi.jlcdproc.commands.Command;
+import org.awi.jlcdproc.commands.Hello;
 import org.awi.jlcdproc.events.DriverInfoEvent;
-import org.awi.jlcdproc.events.Event;
-import org.awi.jlcdproc.events.EventListener;
-import org.awi.jlcdproc.events.FunctionEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Connection implements Closeable {
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private String host = "localhost";
 
 	private int port = 13666;
 
+	private LcdProc lcdProc;
+
 	private Channel channel;
-
-	private ConcurrentLinkedQueue<EventListener> eventListeners = new ConcurrentLinkedQueue<>();
-
-	private Bootstrap bootstrap;
 
 	private EventLoopGroup group;
 
-	private ExecutorService executorService = Executors.newCachedThreadPool();
+	private final ExecutorService executorService;
 
-	public Connection() {
+	private LcdProcHandler lcdProcHandler;
 
-	}
+	private CommandHandler commandHandler;
 
-	public Connection(String host, int port) {
+	public Connection(LcdProc lcdProc, String host, int port) {
+
 		super();
 		this.host = host;
 		this.port = port;
+		this.lcdProc = lcdProc;
+
+		ThreadFactory executorServiceFactory = new DefaultThreadFactory("cmd");
+		executorService = Executors.newCachedThreadPool(executorServiceFactory);
+	}
+
+	public LcdProc getLcdProc() {
+		return lcdProc;
 	}
 
 	public void connect() throws Exception {
 
-		bootstrap = new Bootstrap();
+		Bootstrap bootstrap = new Bootstrap();
 
-		final Connection connection = this;
+		commandHandler = new CommandHandler();
+		lcdProcHandler = new LcdProcHandler(lcdProc);
 
-		group = new NioEventLoopGroup(2);
+		ThreadFactory factory = new DefaultThreadFactory("netty");
+		group = new NioEventLoopGroup(2, factory);
 
-		channel = bootstrap.group(group)
-				.channel(NioSocketChannel.class)
-				.option(ChannelOption.AUTO_READ, true)
-				.handler(new ChannelInitializer<SocketChannel>() {
-					protected void initChannel(SocketChannel ch) throws Exception {
-						ch.pipeline()
-								.addLast(new DelimiterBasedFrameDecoder(256, Delimiters.lineDelimiter()))
-								.addLast(new StringDecoder())
-								.addLast(new StringEncoder())
-								.addLast(new LcdProcHandler(connection));
-					};
-				})
-				.connect(new InetSocketAddress(host, port))
-				.sync()
-				.channel();
+		try {
 
-		String command = "hello\n";
-
-		ConnectEvent connectEvent = (ConnectEvent) execute(command, ConnectEvent.class);
-		if (connectEvent == null) {
-
-			throw new LcdProcConnectException();
+			channel = bootstrap.group(group)
+					.channel(NioSocketChannel.class)
+					.option(ChannelOption.AUTO_READ, true)
+					.handler(new ChannelInitializer<SocketChannel>() {
+						protected void initChannel(SocketChannel ch) throws Exception {
+							ch.pipeline()
+									.addLast(new DelimiterBasedFrameDecoder(256, Delimiters.lineDelimiter()))
+									.addLast(new StringDecoder())
+									.addLast(new StringEncoder())
+									.addLast(lcdProcHandler)
+									.addLast(commandHandler);
+						};
+					})
+					.connect(new InetSocketAddress(host, port))
+					.sync()
+					.channel();
+		} catch (Exception e) {
+			close();
+			throw new LcdProcConnectException(host, port);
 		}
-		System.out.println(connectEvent);
+
+		try {
+
+			send(new Hello(this));
+		} catch (Exception e) {
+
+			close();
+			throw e;
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
-	
+
 		if (channel != null) {
-	
+
 			channel.close();
 			channel = null;
 		}
 		executorService.shutdown();
 		group.shutdownGracefully();
-	
-		System.out.println("shutdown");
+
+		logger.debug("shutdown");
 	}
 
-	public void addEventListener(EventListener eventListener) {
+	public void send(Command command) throws Exception {
 
-		eventListeners.add(eventListener);
-	}
+		AtomicReference<Boolean> commandSuccessfullySent = new AtomicReference<>();
+		Thread currentThread = Thread.currentThread();
 
-	public void removeEventListener(EventListener eventListener) {
+		command.setBlockedThread(currentThread);
 
-		eventListeners.remove(eventListener);
-	}
+		channel.writeAndFlush(command).addListener((ChannelFuture f) -> {
 
-	public void fireEvent(Event event) {
-
-		for (EventListener eventListener : eventListeners) {
-			
-			executorService.submit(() -> {
-
-				eventListener.onEvent(event);
-			});
-		}
-
-	}
-
-	public void send(Object... args) throws Exception {
-
-		StringBuilder sb = new StringBuilder();
-
-		for (Object arg : args) {
-
-			if (arg instanceof Object[]) {
-
-				Object[] objects = (Object[]) arg;
-				for (Object object : objects) {
-
-					if (object != null) {
-
-						sb.append(object).append(" ");
-					}
-				}
-			} else {
-
-				if (arg != null) {
-
-					sb.append(arg).append(" ");
-				}
+			commandSuccessfullySent.set(f.isSuccess());
+			if (!f.isSuccess()) {
+				currentThread.interrupt();
 			}
-		}
+		});
 
-		sb.append("\n");
-
-		FunctionEvent event = (FunctionEvent) execute(sb.toString(), FunctionEvent.class);
-
-		if (event == null) {
-
-			throw new CommandExecutionException("Command not executed in time");
-		}
-
-		if (!event.isSuccess()) {
-
-			throw new CommandExecutionException(event.toString());
-		}
-	}
-
-	public String info() {
-		
-		DriverInfoEvent event = (DriverInfoEvent) execute("info\n", DriverInfoEvent.class);
-		
-		return event.getDriverInfo();
-	}
-	
-	private Event execute(String command, Class<? extends Event> expectedEvent) {
-	
-		CommandCompletedListener listener = new CommandCompletedListener(expectedEvent);
-		addEventListener(listener);
-	
-		channel.writeAndFlush(command);
-	
-		Future<Event> future = executorService.submit(listener);
-	
 		try {
-	
-			return future.get(500, TimeUnit.MILLISECONDS);
-		} catch (Exception e) {
-	
-			return null;
-		} finally {
-	
-			removeEventListener(listener);
+
+			currentThread.join(500);
+			logger.error("Timeout for " + command.toString());
+			throw new CommandExecutionTimeoutException(command);
+		} catch (InterruptedException e) {
+		}
+
+		if (!command.isSuccess()) {
+			throw new CommandExecutionException(command);
 		}
 	}
+
+	// private Event execute(String command, Class<? extends Event>
+	// expectedEvent) {
+	//
+	// CommandCompletedListener listener = new
+	// CommandCompletedListener(expectedEvent);
+	// addEventListener(listener);
+	// Future<Event> future = executorService.submit(listener);
+	//
+	// channel.writeAndFlush(command);
+	//
+	// try {
+	//
+	// return future.get(500, TimeUnit.MILLISECONDS);
+	// } catch (Exception e) {
+	//
+	// logger.error(e.getMessage());
+	// return null;
+	// } finally {
+	//
+	// removeEventListener(listener);
+	// }
+	// }
+	//
+	// public void release() {
+	//
+	// channel.attr(CURRENT_COMMAND).set(null);
+	// }
 }

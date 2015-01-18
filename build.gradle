@@ -1,19 +1,31 @@
 buildscript {
 
-	repositories {
-		mavenCentral()
-	}
+	repositories { mavenCentral() }
 }
 
-repositories {
-	mavenCentral()
-}
+repositories { mavenCentral() }
 
 apply plugin: 'java'
 
 dependencies {
 
-	compile   (group: 'io.netty', name:'netty-all', version:'4.0.24.Final')
+	compile   (
+			[group: 'io.netty', name:'netty-all', version:'4.0.24.Final'],
+			[group: 'ch.qos.logback', name: 'logback-core', version: '1.1.2'],
+			[group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'],
+			[group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6']
+			)
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 apply plugin: 'eclipse'
+
+eclipse {
+	classpath {
+		containers.removeAll { it.startsWith('org.eclipse.jdt.launching.JRE_CONTAINER') }
+		containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_25'
+	}
+}
+

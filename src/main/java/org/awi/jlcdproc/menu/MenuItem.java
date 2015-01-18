@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.io.Connection;
 
-public abstract class MenuItem implements EventListener {
+public abstract class MenuItem extends Command implements EventListener {
 
 	private final static String MENU_ADD_ITEM = "menu_add_item";
 
@@ -18,8 +19,6 @@ public abstract class MenuItem implements EventListener {
 	private final static String MENU_DEL_ITEM = "menu_del_item";
 
 	private final static Map<String, MenuItem> menuItems = new HashMap<>();
-
-	protected final Connection connection;
 
 	protected Menu menu;
 
@@ -37,17 +36,18 @@ public abstract class MenuItem implements EventListener {
 
 	MenuItem(Connection connection, Menu menu, String itemId, String name) {
 
+		super(connection);
+		
 		if (menuItems.containsKey(itemId)) {
 
 			throw new IllegalArgumentException("Item ID <" + itemId + "> already in use.");
 		}
 
 		this.menu = menu;
-		this.connection = connection;
 		this.itemId = itemId.replace(" ", "_");
 		this.name = name;
 
-		this.connection.addEventListener(this);
+		connection.getLcdProc().addEventListener(this);
 
 		menuItems.put(itemId, this);
 	}
@@ -99,7 +99,7 @@ public abstract class MenuItem implements EventListener {
 
 		collectMenuItemOptions(options);
 
-		connection.send(MENU_ADD_ITEM, quote(menuId), quote(itemId), getType(), "-text", quote(name), options.optionsAsArray());
+		send(MENU_ADD_ITEM, quote(menuId), quote(itemId), getType(), "-text", quote(name), options.optionsAsArray());
 	}
 
 	protected void menuSetItem() throws Exception {
@@ -109,7 +109,7 @@ public abstract class MenuItem implements EventListener {
 			return;
 		}
 
-		connection.send(MENU_SET_ITEM,
+		send(MENU_SET_ITEM,
 				quote(menu.getItemId()),
 				quote(itemId),
 				option("-prev", prev),
@@ -119,7 +119,8 @@ public abstract class MenuItem implements EventListener {
 
 	public void delete() throws Exception {
 
-		connection.send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
+		send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
+		menu.delete(this);
 	}
 
 	void activate() throws Exception {
@@ -131,7 +132,7 @@ public abstract class MenuItem implements EventListener {
 
 		collectMenuItemOptions(options);
 
-		connection.send(MENU_SET_ITEM,
+		send(MENU_SET_ITEM,
 				quote(menu.getItemId()),
 				quote(itemId),
 				option("-prev", prev),

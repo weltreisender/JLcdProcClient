@@ -10,6 +10,8 @@ public class CommandCompletedListener implements EventListener, Callable<Event> 
 
 	private AtomicReference<Event> event = new AtomicReference<>();
 	
+	private Thread currentThread;
+	
 	private final Class<? extends Event> expectedEvent;
 	
 	public CommandCompletedListener(Class<? extends Event> expectedEvent) {
@@ -25,14 +27,20 @@ public class CommandCompletedListener implements EventListener, Callable<Event> 
 			return;
 		}
 		
-		this.event.set(event);
+		this.event.compareAndSet(null, event);
+		currentThread.interrupt();
 	}
 
 	@Override
 	public Event call() throws Exception {
 
-		while (event.get() == null){
-			Thread.sleep(50);
+		currentThread = Thread.currentThread();
+		
+		try {
+			
+			currentThread.join();
+		} catch (InterruptedException e) {
+			
 		}
 		
 		return event.get();

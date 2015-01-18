@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-public class ConnectEvent implements Event {
+public class ConnectEvent implements CommandResultEvent {
 
 	private final String version;
 	private final String protocolVersion;
@@ -49,7 +49,13 @@ public class ConnectEvent implements Event {
 
 	@Override
 	public String toString() {
-		return "Connect [version=" + version + ", protocolVersion=" + protocolVersion + ", width=" + width + ", height=" + height
+		return "ConnectEvent [version=" + version + ", protocolVersion=" + protocolVersion + ", width=" + width + ", height=" + height
 				+ ", cellWidth=" + cellWidth + ", cellHeight=" + cellHeight + "]";
+	}
+
+	@Override
+	public boolean isSuccess() {
+
+		return true;
 	}
 }

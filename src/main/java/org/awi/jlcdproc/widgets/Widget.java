@@ -1,8 +1,9 @@
 package org.awi.jlcdproc.widgets;
 
+import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.io.Connection;
 
-public class Widget {
+public class Widget extends Command {
 
 	protected static final String WIDGET_ADD = "widget_add";
 	
@@ -10,31 +11,30 @@ public class Widget {
 	
 	protected static final String WIDGET_DEL = "widget_del";
 	
-	protected final Connection connection;
-	
 	protected final Screen screen;
 	
 	protected final String widgetId;
 	
 	public Widget(Connection connection, Screen screen, String widgetId) {
 		
-		this.connection = connection;
+		super(connection);
+		
 		this.screen = screen;
 		this.widgetId = widgetId;
 	}
 	
 	protected void widgetAdd(String type) throws Exception {
 		
-		connection.send(WIDGET_ADD, screen.getScreenId(), widgetId, type);
+		send(WIDGET_ADD, screen.getScreenId(), widgetId, type);
 	}
 	
 	protected void widgetSet(Object ... args) throws Exception {
 		
-		connection.send(WIDGET_SET, screen.getScreenId(), widgetId,  args);
+		send(WIDGET_SET, screen.getScreenId(), widgetId,  args);
 	}
 	
 	public void delete() throws Exception {
 		
-		connection.send(WIDGET_DEL);
+		send(WIDGET_DEL);
 	}
 }

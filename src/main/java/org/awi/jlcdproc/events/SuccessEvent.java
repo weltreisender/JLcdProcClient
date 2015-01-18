@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-public class SuccessEvent implements FunctionEvent {
+public class SuccessEvent implements CommandResultEvent {
 
 	@Override
 	public boolean isSuccess() {

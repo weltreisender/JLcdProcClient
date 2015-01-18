@@ -16,10 +16,10 @@ public class MainMenu extends Menu {
 	@Override
 	public void activate() throws Exception {
 	
-		connection.send("client_set", "name", quote(clientName));
+		send("client_set", "name", quote(clientName));
 		
 		super.activate();
 		
-		connection.send("menu_set_main \"\"");
+		send("menu_set_main \"\"");
 	}
 }

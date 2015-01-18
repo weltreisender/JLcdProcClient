@@ -4,29 +4,36 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+import org.awi.jlcdproc.LcdProc;
 import org.awi.jlcdproc.events.ConnectEvent;
 import org.awi.jlcdproc.events.DriverInfoEvent;
 import org.awi.jlcdproc.events.ErrorEvent;
 import org.awi.jlcdproc.events.Event;
+import org.awi.jlcdproc.events.CommandResultEvent;
 import org.awi.jlcdproc.events.IgnoreEvent;
+import org.awi.jlcdproc.events.KeyEvent;
 import org.awi.jlcdproc.events.ListenEvent;
 import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.events.SuccessEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LcdProcHandler extends ChannelDuplexHandler implements
 		ChannelHandler {
 
-	private Connection connection;
+	private Logger logger = LoggerFactory.getLogger(getClass());
 	
-	public LcdProcHandler(Connection connection) {
+	private LcdProc lcdProc;
+	
+	public LcdProcHandler(LcdProc lcdProc) {
 		
-		this.connection = connection;
+		this.lcdProc = lcdProc;
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 	
-		System.out.println("channel Active");
+		logger.debug("channel Active");
 
 		super.channelActive(ctx);
 	}
@@ -57,17 +64,31 @@ public class LcdProcHandler extends ChannelDuplexHandler implements
 		}  else if ((parameters = parseEventString(eventString, "menuevent")) != null) {
 			
 			event = new MenuEvent(parameters);
+		}  else if ((parameters = parseEventString(eventString, "key")) != null) {
+			
+			event = new KeyEvent(parameters);
 		} else if (eventString.endsWith("driver")) {
 			
 			event = new DriverInfoEvent(eventString);
 		} else {
 			
-			throw new RuntimeException("Unknown event: " + eventString);
+			logger.error("Unknown event: " + eventString);
 		}
 
-		connection.fireEvent(event);
-		
-		super.channelRead(ctx, msg);
+		if (event != null) {
+			
+			if (event instanceof CommandResultEvent) {
+
+				super.channelRead(ctx, event);
+			} else {
+				
+				if (logger.isDebugEnabled()) {
+					
+					logger.debug(event.toString());
+				}
+				lcdProc.fireEvent(event);
+			}
+		}
 	}
 
 	private String parseEventString(String eventString, String command) {

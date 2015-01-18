@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-public class DriverInfoEvent implements Event {
+public class DriverInfoEvent implements CommandResultEvent {
 
 	private String driverInfo;
 
@@ -18,5 +18,11 @@ public class DriverInfoEvent implements Event {
 	public String toString() {
 	
 		return driverInfo;
+	}
+
+	@Override
+	public boolean isSuccess() {
+
+		return true;
 	}
 }
