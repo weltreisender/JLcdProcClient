@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-import org.awi.jlcdproc.menu.MenuItem;
+import org.awi.jlcdproc.commands.menu.MenuItem;
 
 public class MenuEvent implements Event {
 

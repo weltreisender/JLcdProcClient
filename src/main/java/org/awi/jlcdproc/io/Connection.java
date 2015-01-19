@@ -15,7 +15,6 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -26,11 +25,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.awi.jlcdproc.LcdProc;
 import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.commands.Hello;
-import org.awi.jlcdproc.events.DriverInfoEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Connection implements Closeable {
+public class Connection implements AutoCloseable {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -44,8 +42,6 @@ public class Connection implements Closeable {
 
 	private EventLoopGroup group;
 
-	private final ExecutorService executorService;
-
 	private LcdProcHandler lcdProcHandler;
 
 	private CommandHandler commandHandler;
@@ -56,9 +52,6 @@ public class Connection implements Closeable {
 		this.host = host;
 		this.port = port;
 		this.lcdProc = lcdProc;
-
-		ThreadFactory executorServiceFactory = new DefaultThreadFactory("cmd");
-		executorService = Executors.newCachedThreadPool(executorServiceFactory);
 	}
 
 	public LcdProc getLcdProc() {
@@ -116,7 +109,6 @@ public class Connection implements Closeable {
 			channel.close();
 			channel = null;
 		}
-		executorService.shutdown();
 		group.shutdownGracefully();
 
 		logger.debug("shutdown");

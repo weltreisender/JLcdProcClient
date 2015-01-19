@@ -1,6 +1,6 @@
 package org.awi.jlcdproc.events;
 
-import org.awi.jlcdproc.keys.KeyName;
+import org.awi.jlcdproc.commands.keys.KeyName;
 
 public class KeyEvent implements Event {
 
