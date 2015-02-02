@@ -9,6 +9,13 @@ import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.StateEvent;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 
+/**
+ * Class representing an LCDproc screen.
+ * <p> 
+ * It encapsulates the screen identifier that may either be generated automatically or provided by the user.
+ * <p>
+ * The class provides several methods to create {@link Widget Widgets} that will be shown on this screen.
+ */
 public class Screen extends Command implements EventListener {
 
 	private static final String SCREEN_ADD = "screen_add";
