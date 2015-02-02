@@ -1,7 +1,7 @@
 package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Slider extends MenuItem {
 
@@ -17,8 +17,8 @@ public class Slider extends MenuItem {
 
 	private Integer stepSize;
 	
-	Slider(Connection connection, Menu menu, String itemId, String name) {
-		super(connection, menu, itemId, name);
+	Slider(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
+		super(lcdProc, menu, itemId, name);
 	}
 
 	@Override

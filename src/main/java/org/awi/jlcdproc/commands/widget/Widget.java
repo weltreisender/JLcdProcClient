@@ -1,7 +1,7 @@
 package org.awi.jlcdproc.commands.widget;
 
 import org.awi.jlcdproc.commands.Command;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Widget extends Command {
 
@@ -15,9 +15,9 @@ public class Widget extends Command {
 	
 	protected final String widgetId;
 	
-	public Widget(Connection connection, Screen screen, String widgetId) {
+	public Widget(LcdProcInternal lcdProc, Screen screen, String widgetId) {
 		
-		super(connection);
+		super(lcdProc);
 		
 		this.screen = screen;
 		this.widgetId = widgetId;

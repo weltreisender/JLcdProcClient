@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 
 public class Info extends Command {
 
-	public Info(Connection connection) {
-		super(connection);
+	public Info(LcdProcInternal lcdProc) {
+		super(lcdProc);
 	}
 
 	@Override

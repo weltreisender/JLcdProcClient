@@ -1,7 +1,7 @@
 package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Numeric extends MenuItem {
 
@@ -11,8 +11,8 @@ public class Numeric extends MenuItem {
 	
 	private Integer maxValue;
 
-	Numeric(Connection connection, Menu menu, String itemId, String name) {
-		super(connection, menu, itemId, name);
+	Numeric(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
+		super(lcdProc, menu, itemId, name);
 	}
 
 	@Override

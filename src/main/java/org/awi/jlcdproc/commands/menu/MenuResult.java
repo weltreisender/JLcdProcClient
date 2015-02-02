@@ -6,6 +6,7 @@ public enum MenuResult {
 	CLOSE,
 	QUIT;
 	
+	@Override
 	public String toString() {
 		
 		return name().toLowerCase();

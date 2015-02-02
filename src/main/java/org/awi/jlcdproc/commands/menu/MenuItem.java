@@ -8,7 +8,7 @@ import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public abstract class MenuItem extends Command implements EventListener {
 
@@ -34,9 +34,9 @@ public abstract class MenuItem extends Command implements EventListener {
 
 	private final ArrayList<MenuEventListener> eventListeners = new ArrayList<>();
 
-	MenuItem(Connection connection, Menu menu, String itemId, String name) {
+	MenuItem(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
 
-		super(connection);
+		super(lcdProc);
 		
 		if (menuItems.containsKey(itemId)) {
 
@@ -47,7 +47,7 @@ public abstract class MenuItem extends Command implements EventListener {
 		this.itemId = itemId.replace(" ", "_");
 		this.name = name;
 
-		connection.getLcdProc().addEventListener(this);
+		lcdProc.addEventListener(this);
 
 		menuItems.put(itemId, this);
 	}
@@ -121,6 +121,7 @@ public abstract class MenuItem extends Command implements EventListener {
 
 		send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
 		menu.delete(this);
+		
 	}
 
 	void activate() throws Exception {

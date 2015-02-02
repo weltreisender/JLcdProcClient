@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands.widget;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class NumWidget extends Widget {
 
-	public NumWidget(Connection connection, Screen screen, String widgetId) throws Exception {
+	public NumWidget(LcdProcInternal lcdProc, Screen screen, String widgetId) throws Exception {
 
-		super(connection, screen, widgetId);
+		super(lcdProc, screen, widgetId);
 		
 		widgetAdd("num");
 	}

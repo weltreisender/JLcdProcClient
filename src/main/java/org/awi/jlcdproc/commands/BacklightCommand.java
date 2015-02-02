@@ -1,14 +1,14 @@
 package org.awi.jlcdproc.commands;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 
 public class BacklightCommand extends Command {
 
 	private Backlight backlight;
 
-	public BacklightCommand(Connection connection, Backlight backlight) {
-		super(connection);
+	public BacklightCommand(LcdProcInternal lcdProc, Backlight backlight) {
+		super(lcdProc);
 		
 		this.backlight = backlight;
 	}

@@ -1,13 +1,13 @@
 package org.awi.jlcdproc.commands.widget;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class VBarWidget extends BarWidget {
 
-	public VBarWidget(Connection connection, Screen screen, String widgetId)
+	public VBarWidget(LcdProcInternal lcdProc, Screen screen, String widgetId)
 			throws Exception {
 		
-		super(connection, screen, widgetId, "vbar");
+		super(lcdProc, screen, widgetId, "vbar");
 	}
 
 }

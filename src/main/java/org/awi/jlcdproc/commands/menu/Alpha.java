@@ -1,7 +1,7 @@
 package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Alpha extends MenuItem {
 
@@ -29,8 +29,8 @@ public class Alpha extends MenuItem {
 	
 	private String allow;
 
-	Alpha(Connection connection, Menu menu, String itemId, String name) {
-		super(connection, menu, itemId, name);
+	Alpha(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
+		super(lcdProc, menu, itemId, name);
 	}
 
 	@Override

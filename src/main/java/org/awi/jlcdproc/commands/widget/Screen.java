@@ -7,7 +7,7 @@ import org.awi.jlcdproc.commands.Priority;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.StateEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Screen extends Command implements EventListener {
 
@@ -23,18 +23,18 @@ public class Screen extends Command implements EventListener {
 	
 	private int currentWidgetId = 0; 
 	
-	public Screen(Connection connection, int screenId) throws Exception {
+	public Screen(LcdProcInternal lcdProc, int screenId) throws Exception {
 
-		this(connection, Integer.toString(screenId));
+		this(lcdProc, Integer.toString(screenId));
 	}
 
-	public Screen(Connection connection, String screenId) throws Exception {
+	public Screen(LcdProcInternal lcdProc, String screenId) throws Exception {
 		
-		super(connection);
+		super(lcdProc);
 
 		this.screenId = screenId;
 		
-		connection.getLcdProc().addEventListener(this);
+		lcdProc.addEventListener(this);
 		
 		send(SCREEN_ADD, screenId);
 	}
@@ -103,7 +103,7 @@ public class Screen extends Command implements EventListener {
 
 	public void delete() throws Exception {
 		
-		connection.getLcdProc().removeEventListener(this);
+		lcdProc.removeEventListener(this);
 		
 		send(SCREEN_DEL, screenId);
 	}
@@ -115,7 +115,7 @@ public class Screen extends Command implements EventListener {
 
 	public StringWidget stringWidget(String widgetId) throws Exception {
 		
-		return new StringWidget(connection, this, widgetId);
+		return new StringWidget(lcdProc, this, widgetId);
 	}
 
 	public TitleWidget titleWidget() throws Exception {
@@ -125,7 +125,7 @@ public class Screen extends Command implements EventListener {
 
 	public TitleWidget titleWidget(String widgetId) throws Exception {
 		
-		return new TitleWidget(connection, this, widgetId);
+		return new TitleWidget(lcdProc, this, widgetId);
 	}
 
 	public VBarWidget vbarWidget() throws Exception {
@@ -135,7 +135,7 @@ public class Screen extends Command implements EventListener {
 
 	public VBarWidget vbarWidget(String widgetId) throws Exception {
 		
-		return new VBarWidget(connection, this, widgetId);
+		return new VBarWidget(lcdProc, this, widgetId);
 	}
 
 	public HBarWidget hbarWidget() throws Exception {
@@ -145,7 +145,7 @@ public class Screen extends Command implements EventListener {
 
 	public HBarWidget hbarWidget(String widgetId) throws Exception {
 		
-		return new HBarWidget(connection, this, widgetId);
+		return new HBarWidget(lcdProc, this, widgetId);
 	}
 
 	public IconWidget iconWidget() throws Exception {
@@ -155,7 +155,7 @@ public class Screen extends Command implements EventListener {
 
 	public IconWidget iconWidget(String widgetId) throws Exception {
 		
-		return new IconWidget(connection, this, widgetId);
+		return new IconWidget(lcdProc, this, widgetId);
 	}
 
 	public ScrollerWidget scrollerWidget() throws Exception {
@@ -165,7 +165,7 @@ public class Screen extends Command implements EventListener {
 
 	public ScrollerWidget scrollerWidget(String widgetId) throws Exception {
 		
-		return new ScrollerWidget(connection, this, widgetId);
+		return new ScrollerWidget(lcdProc, this, widgetId);
 	}
 	
 	public FrameWidget frameWidget() throws Exception {
@@ -175,7 +175,7 @@ public class Screen extends Command implements EventListener {
 
 	public FrameWidget frameWidget(String widgetId) throws Exception {
 		
-		return new FrameWidget(connection, this, widgetId);
+		return new FrameWidget(lcdProc, this, widgetId);
 	}
 	
 	public NumWidget numWidget() throws Exception {
@@ -185,7 +185,7 @@ public class Screen extends Command implements EventListener {
 
 	public NumWidget numWidget(String widgetId) throws Exception {
 		
-		return new NumWidget(connection, this, widgetId);
+		return new NumWidget(lcdProc, this, widgetId);
 	}
 	
 	public String getScreenId() {

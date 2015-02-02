@@ -2,7 +2,7 @@ package org.awi.jlcdproc.commands.menu;
 
 import java.util.ArrayList;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Menu extends MenuItem {
 
@@ -10,9 +10,9 @@ public class Menu extends MenuItem {
 	
 	private ArrayList<MenuItem> menuItems = new ArrayList<>();
 
-	Menu(Connection connection, Menu menu, String itemId, String name) {
+	Menu(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
 
-		super(connection, menu, itemId, name);
+		super(lcdProc, menu, itemId, name);
 	}
 
 	public Menu addMenu(String name) {
@@ -22,7 +22,7 @@ public class Menu extends MenuItem {
 
 	public Menu addMenu(String menuId, String name) {
 
-		Menu menu = new Menu(connection, this, menuId, name);
+		Menu menu = new Menu(lcdProc, this, menuId, name);
 		menuItems.add(menu);
 
 		return menu;
@@ -35,19 +35,19 @@ public class Menu extends MenuItem {
 
 	public Action addAction(String itemId, String name) {
 
-		Action action = new Action(connection, this, itemId, name);
+		Action action = new Action(lcdProc, this, itemId, name);
 		menuItems.add(action);
 		return action;
 	}
 
-	public Checkbox addCheckbox(String name, Checkbox.Value initialValue) {
+	public Checkbox addCheckbox(String name, CheckboxValue initialValue) {
 		
 		return addCheckbox(String.format("cb%d", currentId ++), name, initialValue);
 	}
 	
-	public Checkbox addCheckbox(String itemId, String name, Checkbox.Value initialValue) {
+	public Checkbox addCheckbox(String itemId, String name, CheckboxValue initialValue) {
 		
-		Checkbox checkbox = new Checkbox(connection, this, itemId, name, initialValue);
+		Checkbox checkbox = new Checkbox(lcdProc, this, itemId, name, initialValue);
 		menuItems.add(checkbox);
 		return checkbox;
 	}
@@ -59,7 +59,7 @@ public class Menu extends MenuItem {
 	
 	public Ring addRing(String itemId, String name, int initialValue, String... values) {
 		
-		Ring ring = new Ring(connection, this, itemId, name, initialValue, values);
+		Ring ring = new Ring(lcdProc, this, itemId, name, initialValue, values);
 		menuItems.add(ring);
 		return ring;
 	}
@@ -71,7 +71,7 @@ public class Menu extends MenuItem {
 	
 	public Slider addSlider(String itemId, String name) {
 		
-		Slider slider = new Slider(connection, this, itemId, name);
+		Slider slider = new Slider(lcdProc, this, itemId, name);
 		menuItems.add(slider);
 		return slider;
 	}
@@ -83,7 +83,7 @@ public class Menu extends MenuItem {
 	
 	public Numeric addNumeric(String itemId, String name) {
 		
-		Numeric numeric = new Numeric(connection, this, itemId, name);
+		Numeric numeric = new Numeric(lcdProc, this, itemId, name);
 		menuItems.add(numeric);
 		return numeric;
 	}
@@ -95,7 +95,7 @@ public class Menu extends MenuItem {
 
 	public Alpha addAlpha(String itemId, String name) {
 		
-		Alpha alpha = new Alpha(connection, this, itemId, name);
+		Alpha alpha = new Alpha(lcdProc, this, itemId, name);
 		menuItems.add(alpha);
 		return alpha;
 	}
@@ -105,6 +105,7 @@ public class Menu extends MenuItem {
 		menuItems.remove(menuItem);
 	}
 	
+	@Override
 	void activate() throws Exception {
 
 		for (MenuItem menuItem : menuItems) {

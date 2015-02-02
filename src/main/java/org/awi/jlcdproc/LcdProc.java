@@ -1,147 +1,151 @@
 package org.awi.jlcdproc;
 
-import io.netty.util.concurrent.DefaultThreadFactory;
-
-import java.io.IOException;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
 import org.awi.jlcdproc.commands.Backlight;
-import org.awi.jlcdproc.commands.BacklightCommand;
-import org.awi.jlcdproc.commands.Info;
 import org.awi.jlcdproc.commands.keys.Key;
 import org.awi.jlcdproc.commands.keys.KeyMode;
 import org.awi.jlcdproc.commands.keys.KeyName;
 import org.awi.jlcdproc.commands.menu.MainMenu;
 import org.awi.jlcdproc.commands.widget.Screen;
-import org.awi.jlcdproc.events.DriverInfoEvent;
-import org.awi.jlcdproc.events.Event;
-import org.awi.jlcdproc.events.EventListener;
+import org.awi.jlcdproc.commands.widget.Widget;
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.awi.jlcdproc.impl.EventListenerProvider;
+import org.awi.jlcdproc.impl.LcdProcImpl;
 
-public class LcdProc implements AutoCloseable {
+/**
+ * LcdProc client for Java
+ * <p>
+ * This class acts as an interface to the Linux LCDproc server.
+ */
+public interface LcdProc extends AutoCloseable, EventListenerProvider {
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	/**
+	 * Create a new {@link Screen} object with an automatically generated screen
+	 * ID that can be used to create new {@link Widget Widgets}.
+	 * 
+	 * @return {@link Screen} object
+	 * @throws Exception
+	 *             if the screen object could not be created
+	 */
+	public abstract Screen screen() throws Exception;
 
-	private Connection connection;
+	/**
+	 * Create a new {@link Screen} object with the given screen ID that can be
+	 * used to create new {@link Widget Widgets}.
+	 * 
+	 * @param screenId
+	 *            Screen ID used to identify the screen
+	 * @return {@link Screen} object
+	 * @throws Exception
+	 *             if the screen object could not be created
+	 */
+	public abstract Screen screen(String screenId) throws Exception;
 
-	private ConcurrentLinkedQueue<EventListener> eventListeners = new ConcurrentLinkedQueue<>();
+	/**
+	 * Create a new {@link MainMenu} with the given name.
+	 * 
+	 * @param name
+	 *            Name of the {@link MainMenu}
+	 * 
+	 * @return {@link MainMenu}
+	 */
+	public abstract MainMenu mainMenu(String name);
 
-	private final ExecutorService executorService;
+	/**
+	 * Create a new {@link Key} object for the given {@link KeyName}. Listeners
+	 * can be added to this object to react if the key was pressed.
+	 * 
+	 * {@link KeyMode#SHARED} is used for {@link Key} objects created with this
+	 * method.
+	 * 
+	 * @param keyName
+	 *            {@link KeyName} to create the object for
+	 * @return {@link Key} object
+	 * @throws Exception
+	 *             if the key object could not be created
+	 */
+	public abstract Key addKey(KeyName keyName) throws Exception;
 
-	private int currentScreenId = 0;
+	/**
+	 * Create a new {@link Key} object for the given {@link KeyName} with the
+	 * given {@link KeyMode}. Listeners can be added to this object to react if
+	 * the key was pressed.
+	 * 
+	 * @param keyName
+	 *            {@link KeyName} to create the object for
+	 * @param keyMode
+	 *            {@link KeyMode} to use for the key
+	 * @return {@link Key} object
+	 * @throws Exception
+	 *             if the key object could not be created. E.g. not all keys can
+	 *             be created using {@link KeyMode#EXCLUSIVE}
+	 */
+	public abstract Key addKey(KeyName key, KeyMode keyMode) throws Exception;
 
-	public LcdProc() throws Exception {
+	/**
+	 * Use this method to get driver information
+	 * 
+	 * @return Driver informatin
+	 * @throws Exception
+	 *             if the information could no be retrieved for some reason
+	 */
+	public abstract String info() throws Exception;
 
-		this("localhost", 13666);
+	/**
+	 * Change the backlight of the LCD (not possible for all displays)
+	 * 
+	 * @param backlight
+	 *            {@link Backlight} to use for the LCD
+	 * @throws Exception
+	 *             if the command could not be executed for some reason
+	 */
+	public abstract void backlight(Backlight backlight) throws Exception;
+
+	/**
+	 * Create a new {@link LcdProc} instance that connects to an LcdProc server
+	 * on localhost port 13666.
+	 * 
+	 * @return New instance of {@link LcdProc}
+	 * @throws Exception
+	 *             if the connection could not be established
+	 */
+	public static LcdProc create() throws Exception {
+
+		return new LcdProcImpl();
 	}
 
-	public LcdProc(String host, int port) throws Exception {
+	/**
+	 * Create a new {@link LcdProc} instance that connects to an LcdProc server
+	 * on the given host and port.
+	 * 
+	 * @param host
+	 *            Hostname or IP address where the LCDproc server is listening
+	 * @param port
+	 *            Port where the LCDproc server is listening
+	 * @return New instance of {@link LcdProc}
+	 * @throws Exception
+	 *             if the connection could not be stablished
+	 */
+	public static LcdProc create(String host, int port) throws Exception {
 
-		connection = new Connection(this, host, port);
-		connection.connect();
-
-		ThreadFactory executorServiceFactory = new DefaultThreadFactory("cmd");
-		executorService = Executors.newCachedThreadPool(executorServiceFactory);
-	}
-
-	public void close() throws IOException {
-
-		connection.close();
-		executorService.shutdown();
-	}
-
-	// public void clientName(String name) throws Exception {
-	//
-	// connection.send(null, "client_set", "-name", name);
-	// }
-
-	public Screen screen() throws Exception {
-
-		return new Screen(connection, currentScreenId++);
-	}
-
-	public Screen screen(String screenId) throws Exception {
-
-		return new Screen(connection, screenId);
-	}
-
-	public MainMenu mainMenu(String name) {
-
-		return new MainMenu(connection, name);
-	}
-
-	public Key addKey(KeyName key) throws Exception {
-
-		return new Key(connection, key);
-	}
-
-	public Key addKey(KeyName key, KeyMode keyMode) throws Exception {
-
-		return new Key(connection, key, keyMode);
-	}
-
-	public String info() throws Exception {
-
-		Info info = new Info(connection);
-
-		info.send(info);
-
-		return ((DriverInfoEvent) info.getEvent()).getDriverInfo();
-
-	}
-
-	public void fireEvent(Event event) {
-
-		if (executorService.isShutdown() || executorService.isTerminated()) {
-
-			return;
-		}
-
-		executorService.submit(() -> {
-			for (EventListener eventListener : eventListeners) {
-
-				eventListener.onEvent(event);
-			}
-		});
-	}
-
-	public void backlight(Backlight backlight) throws Exception {
-
-		BacklightCommand backlightCmd = new BacklightCommand(connection, backlight);
-		backlightCmd.send();
-	}
-
-	public void addEventListener(EventListener eventListener) {
-
-		eventListeners.add(eventListener);
-	}
-
-	public void removeEventListener(EventListener eventListener) {
-
-		eventListeners.remove(eventListener);
+		return new LcdProcImpl(host, port);
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		try (LcdProc lcdProc1 = new LcdProc("localhost", 13666)) {
+		try (LcdProc lcdProc1 = create("mediapc", 13666)) {
 
 			Thread currentThread = Thread.currentThread();
 
-//			Screen screen = lcdProc1.screen();
-//			screen.setHeartbeat(Heartbeat.OFF);
-//
-//			lcdProc1.addKey(KeyName.ENTER).addEventListener((KeyEvent e) -> currentThread.interrupt());
-//
-//			screen.stringWidget().set(1, 1, "test");
-//
-//			lcdProc1.info();
-//			lcdProc1.backlight(Backlight.TOGGLE);
+			// Screen screen = lcdProc1.screen();
+			// screen.setHeartbeat(Heartbeat.OFF);
+			//
+			// lcdProc1.addKey(KeyName.ENTER).addEventListener((KeyEvent e) ->
+			// currentThread.interrupt());
+			//
+			// screen.stringWidget().set(1, 1, "test");
+			//
+			// lcdProc1.info();
+			// lcdProc1.backlight(Backlight.TOGGLE);
 
 			// for (KeyName key : new KeyName[] {KeyName.UP, KeyName.DOWN,
 			// KeyName.LEFT, KeyName.RIGHT}) {
@@ -159,7 +163,7 @@ public class LcdProc implements AutoCloseable {
 			MainMenu mainMenu = lcdProc1.mainMenu("main");
 			mainMenu.addAction("Exit").addEventListener((MenuEvent e) -> currentThread.interrupt());
 			mainMenu.addRing("Ring", 0, "first", "second", "third")
-					.addEventListener((MenuEvent e) -> lcdProc1.logger.debug(e.toString()));
+					.addEventListener((MenuEvent e) -> System.out.println(e.toString()));
 
 			mainMenu.activate();
 			mainMenu.show();
@@ -169,4 +173,5 @@ public class LcdProc implements AutoCloseable {
 
 		}
 	}
+
 }

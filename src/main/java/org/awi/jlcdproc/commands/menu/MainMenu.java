@@ -1,14 +1,15 @@
 package org.awi.jlcdproc.commands.menu;
 
+import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.awi.jlcdproc.io.Connection;
 
 public class MainMenu extends Menu {
 
 	private final String clientName;
 	
-	public MainMenu(Connection connection, String clientName) {
+	public MainMenu(LcdProcInternal lcdProc, Connection connection, String clientName) {
 		
-		super(connection, null, "_client_menu_", "main");
+		super(lcdProc, null, "_client_menu_", "main");
 		
 		this.clientName = clientName;
 	}

@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands.widget;
 
 import org.awi.jlcdproc.commands.Icon;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class IconWidget extends Widget {
 
-	public IconWidget(Connection connection, Screen screen, String widgetId) throws Exception {
-		super(connection, screen, widgetId);
+	public IconWidget(LcdProcInternal lcdProc, Screen screen, String widgetId) throws Exception {
+		super(lcdProc, screen, widgetId);
 
 		widgetAdd("icon");
 	}

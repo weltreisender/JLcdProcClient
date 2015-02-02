@@ -1,13 +1,13 @@
 package org.awi.jlcdproc.commands.menu;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Action extends MenuItem {
 
 	private MenuResult menuResult;
 	
-	Action(Connection connection, Menu menu, String itemId, String name) {
-		super(connection, menu, itemId, name);
+	Action(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
+		super(lcdProc, menu, itemId, name);
 	}
 
 	@Override

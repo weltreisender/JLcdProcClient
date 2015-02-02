@@ -4,17 +4,17 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
-import org.awi.jlcdproc.LcdProc;
+import org.awi.jlcdproc.events.CommandResultEvent;
 import org.awi.jlcdproc.events.ConnectEvent;
 import org.awi.jlcdproc.events.DriverInfoEvent;
 import org.awi.jlcdproc.events.ErrorEvent;
 import org.awi.jlcdproc.events.Event;
-import org.awi.jlcdproc.events.CommandResultEvent;
 import org.awi.jlcdproc.events.IgnoreEvent;
 import org.awi.jlcdproc.events.KeyEvent;
 import org.awi.jlcdproc.events.ListenEvent;
 import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.events.SuccessEvent;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +23,9 @@ public class LcdProcHandler extends ChannelDuplexHandler implements
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private LcdProc lcdProc;
+	private LcdProcInternal lcdProc;
 	
-	public LcdProcHandler(LcdProc lcdProc) {
+	public LcdProcHandler(LcdProcInternal lcdProc) {
 		
 		this.lcdProc = lcdProc;
 	}

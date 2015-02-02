@@ -1,7 +1,7 @@
 package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Ring extends MenuItem {
 
@@ -9,9 +9,9 @@ public class Ring extends MenuItem {
 
 	private final String[] values;
 
-	Ring(Connection connection, Menu menu, String itemId, String name, int selectedValue, String... values) {
+	Ring(LcdProcInternal lcdProc, Menu menu, String itemId, String name, int selectedValue, String... values) {
 
-		super(connection, menu, itemId, name);
+		super(lcdProc, menu, itemId, name);
 
 		if (values == null || values.length == 0) {
 			

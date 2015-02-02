@@ -8,7 +8,7 @@ import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.KeyEvent;
 import org.awi.jlcdproc.events.SuccessEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Key extends Command implements EventListener {
 
@@ -22,13 +22,13 @@ public class Key extends Command implements EventListener {
 
 	private final ArrayList<KeyEventListener> eventListeners = new ArrayList<>();
 
-	public Key(Connection connection, KeyName keyName) throws Exception {
+	public Key(LcdProcInternal lcdProc, KeyName keyName) throws Exception {
 
-		this(connection, keyName, null);
+		this(lcdProc, keyName, null);
 	}
 
-	public Key(Connection connection, KeyName keyName, KeyMode keyMode) throws Exception {
-		super(connection);
+	public Key(LcdProcInternal lcdProc, KeyName keyName, KeyMode keyMode) throws Exception {
+		super(lcdProc);
 
 		this.keyName = keyName;
 		this.keyMode = keyMode;
@@ -40,7 +40,7 @@ public class Key extends Command implements EventListener {
 
 			send(CLIENT_ADD_KEY, keyMode == KeyMode.SHARED ? "-shared" : "-exclusively", keyName.getKeyName());
 		}
-		connection.getLcdProc().addEventListener(this);
+		lcdProc.addEventListener(this);
 	}
 
 	public KeyName getKeyName() {
@@ -54,7 +54,7 @@ public class Key extends Command implements EventListener {
 	public void delete() throws Exception {
 
 		send(CLIENT_DEL_KEY, keyName.getKeyName());
-		connection.getLcdProc().removeEventListener(this);
+		lcdProc.removeEventListener(this);
 	}
 
 	public void addEventListener(KeyEventListener eventListener) {
@@ -80,7 +80,7 @@ public class Key extends Command implements EventListener {
 	}
 
 	@Override
-	public boolean processCommandResultEvent(CommandResultEvent event) {
+	public boolean isCommandCompleted(CommandResultEvent event) {
 
 		return event instanceof SuccessEvent;
 	}

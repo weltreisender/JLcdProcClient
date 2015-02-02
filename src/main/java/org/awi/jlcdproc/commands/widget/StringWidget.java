@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands.widget;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class StringWidget extends Widget {
 
-	public StringWidget(Connection connection, Screen screen, String widgetId) throws Exception {
+	public StringWidget(LcdProcInternal lcdProc, Screen screen, String widgetId) throws Exception {
 
-		super(connection, screen, widgetId);
+		super(lcdProc, screen, widgetId);
 		
 		widgetAdd("string");
 	}

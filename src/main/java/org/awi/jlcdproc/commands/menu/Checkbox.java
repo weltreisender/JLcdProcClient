@@ -1,28 +1,16 @@
 package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class Checkbox extends MenuItem {
 
-	public enum Value {
-
-		ON,
-		OFF,
-		GRAY;
-
-		public String toString() {
-
-			return name().toLowerCase();
-		}
-	}
-
-	private Value selectedValue;
+	private CheckboxValue selectedValue;
 	
 	private Boolean allowGray;
 
-	Checkbox(Connection connection, Menu menu, String itemId, String name, Value selectedValue) {
-		super(connection, menu, itemId, name);
+	Checkbox(LcdProcInternal lcdProc, Menu menu, String itemId, String name, CheckboxValue selectedValue) {
+		super(lcdProc, menu, itemId, name);
 
 		this.selectedValue = selectedValue;
 	}
@@ -39,22 +27,22 @@ public class Checkbox extends MenuItem {
 		return "checkbox";
 	}
 
-	public Value getSelectedValue() {
+	public CheckboxValue getSelectedValue() {
 		return selectedValue;
 	}
 	
 	@Override
 	public void onEvent(MenuEvent event) {
 	
-		selectedValue = Value.valueOf(event.getValue().toUpperCase());
+		selectedValue = CheckboxValue.valueOf(event.getValue().toUpperCase());
 	}
 	
 	@Override
 	void collectMenuItemOptions(MenuOptions options) throws Exception {
 	
-		if (allowGray == null && selectedValue == Value.GRAY) {
+		if (allowGray == null && selectedValue == CheckboxValue.GRAY) {
 			
-			selectedValue = Value.OFF;
+			selectedValue = CheckboxValue.OFF;
 		}
 		
 		options.add("-value", selectedValue);

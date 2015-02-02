@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands.widget;
 
 import org.awi.jlcdproc.commands.Direction;
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 public class FrameWidget extends Widget {
 
-	public FrameWidget(Connection connection, Screen screen, String widgetId) throws Exception {
-		super(connection, screen, widgetId);
+	public FrameWidget(LcdProcInternal lcdProc, Screen screen, String widgetId) throws Exception {
+		super(lcdProc, screen, widgetId);
 
 		widgetAdd("frame");
 	}

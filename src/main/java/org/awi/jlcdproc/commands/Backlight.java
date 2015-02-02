@@ -9,6 +9,7 @@ public enum Backlight {
 	BLINK,
 	FLASH;
 	
+	@Override
 	public String toString() {
 		
 		return name().toLowerCase();

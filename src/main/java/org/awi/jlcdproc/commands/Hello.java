@@ -1,12 +1,12 @@
 package org.awi.jlcdproc.commands;
 
-import org.awi.jlcdproc.io.Connection;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 
 
 public class Hello extends Command {
 
-	public Hello(Connection connection) {
-		super(connection);
+	public Hello(LcdProcInternal lcdProc) {
+		super(lcdProc);
 	}
 
 	@Override
