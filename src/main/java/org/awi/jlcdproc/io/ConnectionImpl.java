@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ThreadFactory;
 
-import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.commands.Hello;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.slf4j.Logger;
@@ -50,11 +49,13 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 		this.lcdProc = lcdProc;
 	}
 
-//	public LcdProc getLcdProc() {
-//		return lcdProc;
-//	}
+	// public LcdProc getLcdProc() {
+	// return lcdProc;
+	// }
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.awi.jlcdproc.io.Connection#connect()
 	 */
 	@Override
@@ -62,8 +63,8 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 
 		Bootstrap bootstrap = new Bootstrap();
 
-		commandHandler = new CommandHandler();
-		lcdProcHandler = new LcdProcHandler(lcdProc);
+		commandHandler = new CommandHandler(lcdProc);
+		lcdProcHandler = new LcdProcHandler();
 
 		ThreadFactory factory = new DefaultThreadFactory("netty");
 		group = new NioEventLoopGroup(2, factory);
@@ -74,7 +75,7 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 					.channel(NioSocketChannel.class)
 					.option(ChannelOption.AUTO_READ, true)
 					.handler(new ChannelInitializer<SocketChannel>() {
-						
+
 						@Override
 						protected void initChannel(SocketChannel ch) throws Exception {
 							ch.pipeline()
@@ -116,63 +117,15 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 		logger.debug("shutdown");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.awi.jlcdproc.io.Connection#send(org.awi.jlcdproc.commands.Command)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.awi.jlcdproc.io.Connection#send(org.awi.jlcdproc.commands.Command)
 	 */
 	@Override
-	public void send(Command command) throws Exception {
+	public void send(CommandHolder commandHolder) throws Exception {
 
-		channel.writeAndFlush(command).addListener(command);
-		
-//		Thread currentThread = Thread.currentThread();
-//
-//		command.setBlockedThread(currentThread);
-//
-//		channel.writeAndFlush(command).addListener(f -> {
-//
-//			if (!f.isSuccess()) {
-//				currentThread.interrupt();
-//			}
-//		});
-//
-//		try {
-//
-//			currentThread.join(500);
-//			logger.error("Timeout for " + command.toString());
-//			throw new CommandExecutionTimeoutException(command);
-//		} catch (InterruptedException e) {
-//		}
-//
-//		if (!command.isSuccess()) {
-//			throw new CommandExecutionException(command);
-//		}
+		channel.writeAndFlush(commandHolder).addListener(commandHolder.getCommand());
 	}
-
-	// private Event execute(String command, Class<? extends Event>
-	// expectedEvent) {
-	//
-	// CommandCompletedListener listener = new
-	// CommandCompletedListener(expectedEvent);
-	// addEventListener(listener);
-	// Future<Event> future = executorService.submit(listener);
-	//
-	// channel.writeAndFlush(command);
-	//
-	// try {
-	//
-	// return future.get(500, TimeUnit.MILLISECONDS);
-	// } catch (Exception e) {
-	//
-	// logger.error(e.getMessage());
-	// return null;
-	// } finally {
-	//
-	// removeEventListener(listener);
-	// }
-	// }
-	//
-	// public void release() {
-	//
-	// channel.attr(CURRENT_COMMAND).set(null);
-	// }
 }

@@ -10,6 +10,8 @@ import org.awi.jlcdproc.events.KeyEvent;
 import org.awi.jlcdproc.events.SuccessEvent;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 
+import static org.awi.jlcdproc.commands.CommandParameters.*;
+
 public class Key extends Command implements EventListener {
 
 	private static final String CLIENT_DEL_KEY = "client_del_key";
@@ -34,11 +36,11 @@ public class Key extends Command implements EventListener {
 		this.keyMode = keyMode;
 
 		if (keyMode == null) {
-			
-			send(CLIENT_ADD_KEY, keyName.getKeyName());
+
+			send(CLIENT_ADD_KEY, params(), new KeyOption(keyName.getKeyName()));
 		} else {
 
-			send(CLIENT_ADD_KEY, keyMode == KeyMode.SHARED ? "-shared" : "-exclusively", keyName.getKeyName());
+			send(CLIENT_ADD_KEY, params(), new KeyOption(keyMode == KeyMode.SHARED ? "-shared" : "-exclusively", keyName.getKeyName()));
 		}
 		lcdProc.addEventListener(this);
 	}
@@ -53,7 +55,7 @@ public class Key extends Command implements EventListener {
 
 	public void delete() throws Exception {
 
-		send(CLIENT_DEL_KEY, keyName.getKeyName());
+		send(CLIENT_DEL_KEY, params(), new KeyOption(keyName.getKeyName()));
 		lcdProc.removeEventListener(this);
 	}
 

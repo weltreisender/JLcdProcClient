@@ -1,5 +1,7 @@
 package org.awi.jlcdproc.commands.widget;
 
+import static org.awi.jlcdproc.commands.CommandParameters.params;
+
 import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 
@@ -25,16 +27,21 @@ public class Widget extends Command {
 	
 	protected void widgetAdd(String type) throws Exception {
 		
-		send(WIDGET_ADD, screen.getScreenId(), widgetId, type);
+		send(WIDGET_ADD, params(screen.getScreenId(), widgetId, type));
 	}
 	
 	protected void widgetSet(Object ... args) throws Exception {
 		
-		send(WIDGET_SET, screen.getScreenId(), widgetId,  args);
+		Object[] parameters = new Object[args.length + 2];
+		parameters[0] = screen.getScreenId();
+		parameters[1] = widgetId;
+		System.arraycopy(args, 0, parameters, 2, args.length);
+		
+		send(WIDGET_SET, params(parameters));
 	}
 	
 	public void delete() throws Exception {
 		
-		send(WIDGET_DEL);
+		send(WIDGET_DEL, params());
 	}
 }

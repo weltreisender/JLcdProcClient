@@ -137,10 +137,57 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 			Thread currentThread = Thread.currentThread();
 
 			// Screen screen = lcdProc1.screen();
-			// screen.setHeartbeat(Heartbeat.OFF);
+			// screen.set(heartbeatOff, cursorOn);
+			// StringWidget stringWidget = screen.stringWidget();
+			//
+			// final int[] pos = { 1, 1 };
+			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+			//
+			// lcdProc1.addKey(KeyName.RIGHT).addEventListener(e -> {
+			// try {
+			// pos[0] = ++pos[0] < 17 ? pos[0] : 16;
+			// screen.setCursorPosition(pos[0], pos[1]);
+			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+			// } catch (Exception e1) {
+			// e1.printStackTrace();
+			// }
+			// });
+			//
+			// lcdProc1.addKey(KeyName.LEFT).addEventListener(e -> {
+			// try {
+			// pos[0] = --pos[0] > 0 ? pos[0] : 1;
+			// screen.setCursorPosition(pos[0], pos[1]);
+			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+			// } catch (Exception e1) {
+			// e1.printStackTrace();
+			// }
+			// });
+			//
+			// lcdProc1.addKey(KeyName.UP).addEventListener(e -> {
+			// try {
+			// pos[1] = --pos[1] > 0 ? pos[1] : 1;
+			// screen.setCursorPosition(pos[0], pos[1]);
+			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+			// } catch (Exception e1) {
+			// e1.printStackTrace();
+			// }
+			// });
+			//
+			// lcdProc1.addKey(KeyName.DOWN).addEventListener(e -> {
+			// try {
+			// pos[1] = ++pos[1] < 5 ? pos[1] : 2;
+			// screen.setCursorPosition(pos[0], pos[1]);
+			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+			// } catch (Exception e1) {
+			// e1.printStackTrace();
+			// }
+			// });
 			//
 			// lcdProc1.addKey(KeyName.ENTER).addEventListener((KeyEvent e) ->
 			// currentThread.interrupt());
+			//
+			// System.out.println(lcdProc1.info());
+
 			//
 			// screen.stringWidget().set(1, 1, "test");
 			//
@@ -173,5 +220,4 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 
 		}
 	}
-
 }

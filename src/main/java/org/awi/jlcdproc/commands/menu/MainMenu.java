@@ -2,6 +2,7 @@ package org.awi.jlcdproc.commands.menu;
 
 import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.awi.jlcdproc.io.Connection;
+import static org.awi.jlcdproc.commands.CommandParameters.*;
 
 public class MainMenu extends Menu {
 
@@ -17,10 +18,10 @@ public class MainMenu extends Menu {
 	@Override
 	public void activate() throws Exception {
 	
-		send("client_set", "name", quote(clientName));
+		send("client_set", params("name", quote(clientName)));
 		
 		super.activate();
 		
-		send("menu_set_main \"\"");
+		send("menu_set_main", params("\"\""));
 	}
 }

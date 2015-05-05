@@ -2,9 +2,11 @@ package org.awi.jlcdproc.commands.menu;
 
 import java.util.ArrayList;
 
+import org.awi.jlcdproc.commands.CommandOption;
+
 public class MenuOptions {
 
-	private ArrayList<Object> options = new ArrayList<>();
+	private ArrayList<CommandOption> options = new ArrayList<>();
 	
 	public void add(String option, Object value) {
 		
@@ -12,21 +14,16 @@ public class MenuOptions {
 			return;
 		}
 		
-		options.add(option);
-		options.add(value);
+		options.add(new CommandOption(option, value));
 	}
 	
-	public void add(Object value) {
+	public CommandOption[] optionsAsArray() {
 		
-		if (value == null) {
-			return;
-		}
-		
-		options.add(value);
+		return options.toArray(new CommandOption[options.size()]);
 	}
-	
-	public Object[] optionsAsArray() {
-		
-		return options.toArray();
+
+	@Override
+	public String toString() {
+		return "MenuOptions [options=" + options + "]";
 	}
 }

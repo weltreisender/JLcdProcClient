@@ -10,6 +10,8 @@ import org.awi.jlcdproc.events.EventListener;
 import org.awi.jlcdproc.events.MenuEvent;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 
+import static org.awi.jlcdproc.commands.CommandParameters.*;
+
 public abstract class MenuItem extends Command implements EventListener {
 
 	private final static String MENU_ADD_ITEM = "menu_add_item";
@@ -37,7 +39,7 @@ public abstract class MenuItem extends Command implements EventListener {
 	MenuItem(LcdProcInternal lcdProc, Menu menu, String itemId, String name) {
 
 		super(lcdProc);
-		
+
 		if (menuItems.containsKey(itemId)) {
 
 			throw new IllegalArgumentException("Item ID <" + itemId + "> already in use.");
@@ -97,9 +99,9 @@ public abstract class MenuItem extends Command implements EventListener {
 
 		MenuOptions options = new MenuOptions();
 
-		collectMenuItemOptions(options);
+		collectMenuItemOptionsInternal(options);
 
-		send(MENU_ADD_ITEM, quote(menuId), quote(itemId), getType(), "-text", quote(name), options.optionsAsArray());
+		send(MENU_ADD_ITEM, params(quote(menuId), quote(itemId), getType()), options.optionsAsArray());
 	}
 
 	protected void menuSetItem() throws Exception {
@@ -109,19 +111,18 @@ public abstract class MenuItem extends Command implements EventListener {
 			return;
 		}
 
-		send(MENU_SET_ITEM,
-				quote(menu.getItemId()),
-				quote(itemId),
-				option("-prev", prev),
-				option("-next", next),
-				option("-is_hidden", hide));
+		MenuOptions options = new MenuOptions();
+
+		collectMenuItemOptionsInternal(options);
+
+		send(MENU_SET_ITEM, params(quote(menu.getItemId()), quote(itemId)), options.optionsAsArray());
 	}
 
 	public void delete() throws Exception {
 
-		send(MENU_DEL_ITEM, quote(menu.getItemId()), quote(itemId));
+		send(MENU_DEL_ITEM, params(quote(menu.getItemId()), quote(itemId)));
 		menu.delete(this);
-		
+
 	}
 
 	void activate() throws Exception {
@@ -131,20 +132,24 @@ public abstract class MenuItem extends Command implements EventListener {
 
 		MenuOptions options = new MenuOptions();
 
-		collectMenuItemOptions(options);
+		collectMenuItemOptionsInternal(options);
 
-		send(MENU_SET_ITEM,
-				quote(menu.getItemId()),
-				quote(itemId),
-				option("-prev", prev),
-				option("-next", next),
-				option("-is_hidden", hide),
-				option("-text", quote(name)),
-				options.optionsAsArray());
+		send(MENU_SET_ITEM, params(quote(menu.getItemId()), quote(itemId)), options.optionsAsArray());
 
 	}
 
 	void collectMenuItemOptions(MenuOptions options) throws Exception {
+		
+	};
+	
+	void collectMenuItemOptionsInternal(MenuOptions options)throws Exception {
+
+		options.add("-prev", prev);
+		options.add("-next", next);
+		options.add("-is_hidden", hide);
+		options.add("-text", quote(name));
+		
+		collectMenuItemOptions(options);
 	}
 
 	void onEvent(MenuEvent event) {
@@ -203,10 +208,10 @@ public abstract class MenuItem extends Command implements EventListener {
 	protected static String quote(String s) {
 
 		if (s == null) {
-			
+
 			return null;
 		}
-		
+
 		String quotedString = s.replace("\"", "\"\"");
 
 		return String.format("\"%s\"", quotedString);

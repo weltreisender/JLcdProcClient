@@ -6,6 +6,6 @@ public class CommandExecutionException extends Exception {
 
 	public CommandExecutionException(Command command) {
 
-		super(String.format("Could not execute command: <%s> Result: <%s>", command.getCommand(), command.getEvent().toString()));
+		super(String.format("Could not execute command: <%s> Result: <%s>", command.getCommand(), command.getEvent() != null ? command.getEvent().toString() : "unknown"));
 	}
 }

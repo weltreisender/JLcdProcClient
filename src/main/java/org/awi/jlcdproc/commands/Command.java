@@ -5,11 +5,14 @@ import io.netty.channel.ChannelFutureListener;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.awi.jlcdproc.commands.menu.MenuItem;
 import org.awi.jlcdproc.events.CommandResultEvent;
+import org.awi.jlcdproc.events.ErrorEvent;
 import org.awi.jlcdproc.events.Event;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.awi.jlcdproc.io.CommandExecutionException;
 import org.awi.jlcdproc.io.CommandExecutionTimeoutException;
+import org.awi.jlcdproc.io.CommandHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,16 +27,22 @@ public abstract class Command implements ChannelFutureListener {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	protected final LcdProcInternal lcdProc;
-	
-	private AtomicReference<CommandResultEvent> event = new AtomicReference<>();
 
-	private Thread blockedThread = null;
+	protected AtomicReference<CommandResultEvent> event = new AtomicReference<>();
+
+	protected Thread blockedThread = null;
 
 	private String commandString;
 
+	private int optionCount;
+
+	private int completionCount = 0;
+	
 	/**
 	 * Constructor
-	 * @param lcdProc TODO
+	 * 
+	 * @param lcdProc
+	 *            TODO
 	 */
 	public Command(LcdProcInternal lcdProc) {
 
@@ -62,79 +71,89 @@ public abstract class Command implements ChannelFutureListener {
 	 */
 	public boolean isCommandCompleted(CommandResultEvent event) {
 
-		return true;
+		return optionCount == ++completionCount;
 	}
 
 	/**
 	 * @param args
 	 * @throws Exception
 	 */
-	public void send(Object... args) throws Exception {
+	public void send() throws Exception {
+		
+		send("", CommandParameters.params());
+	}
+	
+	/**
+	 * @param args
+	 * @throws Exception
+	 */
+	public void send(String command, CommandParameters parameters, CommandOption ... args) throws Exception {
 
-		StringBuilder commandBuilder = new StringBuilder();
+		completionCount = 0;
+		optionCount = args.length == 0 || this instanceof MenuItem ? 1 : args.length;
+		
+		StringBuilder commandBuilder = new StringBuilder(command).append(" ").append(parameters);
 
-		for (Object arg : args) {
+		for (CommandOption arg : args) {
 
-			if (arg instanceof Object[]) {
+			if (arg != null) {
 
-				Object[] objects = (Object[]) arg;
-				for (Object object : objects) {
-
-					if (object != null) {
-
-						commandBuilder.append(object).append(" ");
-					}
-				}
-			} else {
-
-				if (arg != null) {
-
-					commandBuilder.append(arg).append(" ");
-				}
+				commandBuilder.append(arg.getOption()).append(" ").append(arg.getArg()).append(" ");
 			}
 		}
 
 		commandString = commandBuilder.toString().trim();
 
-		blockedThread = Thread.currentThread();
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending " + toString());
+		}
 
-		lcdProc.getConnection().send(this);
+		event.set(null);
+
+		Thread blockedThread = Thread.currentThread();
+
+		CommandHolder commandHolder = new CommandHolder(this, blockedThread);
+		lcdProc.getConnection().send(commandHolder);
 
 		try {
 
-			blockedThread.join(500);
+			blockedThread.join(1000);
 			logger.error("Timeout for " + toString());
 			throw new CommandExecutionTimeoutException(this);
 		} catch (InterruptedException e) {
 		}
 
-		if (!isSuccess()) {
+		CommandResultEvent commandResultEvent = (CommandResultEvent) commandHolder.getEvent();
+
+		event.set(commandResultEvent);
+
+		if (!isSuccess(commandResultEvent)) {
 			throw new CommandExecutionException(this);
 		}
 
 	}
 
-	public boolean onCommandResultEvent(CommandResultEvent event) {
+	public boolean onCommandResultEvent(CommandHolder commandHolder, CommandResultEvent event) {
 
-		this.event.compareAndSet(null, event);
+		if (logger.isDebugEnabled()) {
+
+			logger.debug(String.format("%s received for %s", event, this));
+		}
+
+		commandHolder.setEvent(commandHolder.getEvent() == null || event instanceof ErrorEvent ? event : commandHolder.getEvent());
 
 		boolean commandTerminated = isCommandCompleted(event);
 		if (commandTerminated) {
 
-			blockedThread.interrupt();
+			commandHolder.getBlockedThread().interrupt();
 		}
 
 		return commandTerminated;
 	}
 
-	public boolean isComplete() {
+	public boolean isSuccess(CommandResultEvent event) {
 
-		return event.get() != null;
-	}
-
-	public boolean isSuccess() {
-
-		return event.get().isSuccess();
+		return event != null && event.isSuccess();
 	}
 
 	public CommandResultEvent getEvent() {

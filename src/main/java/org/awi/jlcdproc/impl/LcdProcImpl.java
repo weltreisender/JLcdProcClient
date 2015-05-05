@@ -73,7 +73,7 @@ public class LcdProcImpl implements LcdProc, LcdProcInternal {
 		logger.debug(String.format("LcdProc successfully connected to %s:%d", host, port));
 
 		ThreadFactory executorServiceFactory = new DefaultThreadFactory("cmd");
-		executorService = Executors.newCachedThreadPool(executorServiceFactory);
+		executorService = Executors.newFixedThreadPool(4, executorServiceFactory);
 	}
 
 	/* (non-Javadoc)
@@ -145,7 +145,7 @@ public class LcdProcImpl implements LcdProc, LcdProcInternal {
 
 		Info info = new Info(this);
 
-		info.send(info);
+		info.send();
 
 		return ((DriverInfoEvent) info.getEvent()).getDriverInfo();
 	}

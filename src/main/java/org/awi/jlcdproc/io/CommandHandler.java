@@ -5,56 +5,83 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.awi.jlcdproc.commands.Command;
 import org.awi.jlcdproc.events.CommandResultEvent;
+import org.awi.jlcdproc.events.Event;
+import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommandHandler extends ChannelDuplexHandler {
 
+	private final LcdProcInternal lcdProc;
+
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public static final AttributeKey<Command> CURRENT_COMMAND = AttributeKey.valueOf("current-command");
+	private ConcurrentLinkedQueue<CommandHolder> pendingCommandQueue = new ConcurrentLinkedQueue<>();
+
+	public static final AttributeKey<CommandHolder> CURRENT_COMMAND = AttributeKey.valueOf("current-command");
+
+	public CommandHandler(LcdProcInternal lcdProc) {
+
+		this.lcdProc = lcdProc;
+	}
 
 	@Override
 	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
 
-		Command command = (Command) msg;
+		CommandHolder commandHolder = (CommandHolder) msg;
+		CommandHolder pendingCommandHolder = ctx.channel().attr(CURRENT_COMMAND).setIfAbsent(commandHolder);
 
-		Command pendingCommand = ctx.channel().attr(CURRENT_COMMAND).setIfAbsent(command);
-		if (pendingCommand == null) {
+		Command command = commandHolder.getCommand();
+		if (logger.isDebugEnabled()) {
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Sending " + command.toString());
-			}
-			
+			logger.debug(String.format("Process %scommand %s",
+					pendingCommandHolder == commandHolder ? "pending " : "",
+					command.toString()));
+		}
+
+		if (pendingCommandHolder == null || pendingCommandHolder == commandHolder) {
+
 			super.write(ctx, command.getCommand() + "\n", promise);
+
 		} else {
-			
-			String errorMessage = String.format("Pending command %s while trying to execute %s", pendingCommand, command);
-			logger.warn(errorMessage);
-			throw new IllegalStateException(errorMessage);
+
+			pendingCommandQueue.add(commandHolder);
 		}
 	}
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-		CommandResultEvent event = (CommandResultEvent) msg;
+		Event event = (Event) msg;
 
-		Command command = ctx.channel().attr(CURRENT_COMMAND).get();
+		if (event instanceof CommandResultEvent) {
 
-		if (logger.isDebugEnabled()) {
-			
-			logger.debug(String.format("%s received for %s", event, command));
-		}
+			CommandHolder commandHolder = ctx.channel().attr(CURRENT_COMMAND).get();
+			if (commandHolder != null) {
 
-		if (command != null) {
+				Command command = commandHolder.getCommand();
+				if (command.onCommandResultEvent(commandHolder, (CommandResultEvent) event)) {
 
-			if (command.onCommandResultEvent(event)) {
+					CommandHolder pendingCommandHolder = pendingCommandQueue.poll();
+					ctx.channel().attr(CURRENT_COMMAND).set(pendingCommandHolder);
 
-				ctx.channel().attr(CURRENT_COMMAND).set(null);
+					//
+					if (pendingCommandHolder != null) {
+
+						logger.debug("Send pending command " + pendingCommandHolder.toString());
+						ctx.channel().writeAndFlush(pendingCommandHolder);
+					}
+				}
 			}
+		} else {
+
+			logger.debug("Fire event " + event.toString());
+			lcdProc.fireEvent(event);
 		}
 	}
+
 }
