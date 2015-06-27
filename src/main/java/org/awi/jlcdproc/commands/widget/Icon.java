@@ -1,5 +1,10 @@
-package org.awi.jlcdproc.commands;
+package org.awi.jlcdproc.commands.widget;
 
+
+/**
+ * Possible icons for the {@link IconWidget}. Not all icons may be supported by
+ * the display.
+ */
 public enum Icon {
 
 	BLOCK_FILLED,

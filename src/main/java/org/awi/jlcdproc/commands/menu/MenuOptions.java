@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 import org.awi.jlcdproc.commands.CommandOption;
 
-public class MenuOptions {
+/**
+ * Helper class to collect options for menu items
+ */
+class MenuOptions {
 
 	private ArrayList<CommandOption> options = new ArrayList<>();
 	

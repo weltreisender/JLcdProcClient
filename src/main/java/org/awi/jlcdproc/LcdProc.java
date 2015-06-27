@@ -1,14 +1,16 @@
 package org.awi.jlcdproc;
 
+
 import org.awi.jlcdproc.commands.Backlight;
 import org.awi.jlcdproc.commands.keys.Key;
 import org.awi.jlcdproc.commands.keys.KeyMode;
 import org.awi.jlcdproc.commands.keys.KeyName;
+import org.awi.jlcdproc.commands.menu.AllowedCharGroups;
 import org.awi.jlcdproc.commands.menu.MainMenu;
 import org.awi.jlcdproc.commands.widget.Screen;
 import org.awi.jlcdproc.commands.widget.Widget;
+import org.awi.jlcdproc.events.EventListenerProvider;
 import org.awi.jlcdproc.events.MenuEvent;
-import org.awi.jlcdproc.impl.EventListenerProvider;
 import org.awi.jlcdproc.impl.LcdProcImpl;
 
 /**
@@ -82,6 +84,17 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 	public abstract Key addKey(KeyName key, KeyMode keyMode) throws Exception;
 
 	/**
+	 * Sets attributes for the current client. The current client is the one
+	 * from the connection that you send this command on, in other words:
+	 * yourself.
+	 * 
+	 * @param name
+	 *            is the client's name as visible to a user.
+	 * @throws Exception
+	 */
+	public void clientName(String name) throws Exception;
+
+	/**
 	 * Use this method to get driver information
 	 * 
 	 * @return Driver informatin
@@ -108,7 +121,7 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 	 * @throws Exception
 	 *             if the connection could not be established
 	 */
-	public static LcdProc create() throws Exception {
+	public static LcdProc connect() throws Exception {
 
 		return new LcdProcImpl();
 	}
@@ -125,68 +138,78 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 	 * @throws Exception
 	 *             if the connection could not be stablished
 	 */
-	public static LcdProc create(String host, int port) throws Exception {
+	public static LcdProc connect(String host, int port) throws Exception {
 
 		return new LcdProcImpl(host, port);
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		try (LcdProc lcdProc1 = create("mediapc", 13666)) {
+		try (LcdProc lcdProc1 = connect("mediapc", 13666)) {
 
 			Thread currentThread = Thread.currentThread();
 
-			// Screen screen = lcdProc1.screen();
-			// screen.set(heartbeatOff, cursorOn);
-			// StringWidget stringWidget = screen.stringWidget();
-			//
-			// final int[] pos = { 1, 1 };
-			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
-			//
-			// lcdProc1.addKey(KeyName.RIGHT).addEventListener(e -> {
-			// try {
-			// pos[0] = ++pos[0] < 17 ? pos[0] : 16;
-			// screen.setCursorPosition(pos[0], pos[1]);
-			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
-			// } catch (Exception e1) {
-			// e1.printStackTrace();
-			// }
-			// });
-			//
-			// lcdProc1.addKey(KeyName.LEFT).addEventListener(e -> {
-			// try {
-			// pos[0] = --pos[0] > 0 ? pos[0] : 1;
-			// screen.setCursorPosition(pos[0], pos[1]);
-			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
-			// } catch (Exception e1) {
-			// e1.printStackTrace();
-			// }
-			// });
-			//
-			// lcdProc1.addKey(KeyName.UP).addEventListener(e -> {
-			// try {
-			// pos[1] = --pos[1] > 0 ? pos[1] : 1;
-			// screen.setCursorPosition(pos[0], pos[1]);
-			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
-			// } catch (Exception e1) {
-			// e1.printStackTrace();
-			// }
-			// });
-			//
-			// lcdProc1.addKey(KeyName.DOWN).addEventListener(e -> {
-			// try {
-			// pos[1] = ++pos[1] < 5 ? pos[1] : 2;
-			// screen.setCursorPosition(pos[0], pos[1]);
-			// stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
-			// } catch (Exception e1) {
-			// e1.printStackTrace();
-			// }
-			// });
-			//
-			// lcdProc1.addKey(KeyName.ENTER).addEventListener((KeyEvent e) ->
-			// currentThread.interrupt());
-			//
-			// System.out.println(lcdProc1.info());
+//			Screen screen = lcdProc1.screen("s1");
+//			screen.set(heartbeatOff, cursorOn);
+//			StringWidget stringWidget = screen.stringWidget("sw1");
+//
+//			final int[] pos = { 1, 1 };
+//			stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//
+//			lcdProc1.addKey(KeyName.MENU, KeyMode.EXCLUSIVE).addEventListener(e -> {
+//				try {
+//					pos[0] = 1;
+//					pos[1] = 1;
+//					screen.setCursorPosition(pos[0], pos[1]);
+//					stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			});
+//
+//			lcdProc1.addKey(KeyName.RIGHT).addEventListener(e -> {
+//				try {
+//					pos[0] = ++pos[0] < 17 ? pos[0] : 16;
+//					screen.setCursorPosition(pos[0], pos[1]);
+//					stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			});
+//
+//			lcdProc1.addKey(KeyName.LEFT).addEventListener(e -> {
+//				try {
+//					pos[0] = --pos[0] > 0 ? pos[0] : 1;
+//					screen.setCursorPosition(pos[0], pos[1]);
+//					stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			});
+//
+//			lcdProc1.addKey(KeyName.UP).addEventListener(e -> {
+//				try {
+//					pos[1] = --pos[1] > 0 ? pos[1] : 1;
+//					screen.setCursorPosition(pos[0], pos[1]);
+//					stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			});
+//
+//			lcdProc1.addKey(KeyName.DOWN).addEventListener(e -> {
+//				try {
+//					pos[1] = ++pos[1] < 5 ? pos[1] : 2;
+//					screen.setCursorPosition(pos[0], pos[1]);
+//					stringWidget.set(1, 2, String.format("%d, %d", pos[0], pos[1]));
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			});
+//
+//			lcdProc1.addKey(KeyName.ENTER).addEventListener((KeyEvent e) -> currentThread.interrupt());
+//
+//			System.out.println(lcdProc1.info());
 
 			//
 			// screen.stringWidget().set(1, 1, "test");
@@ -207,7 +230,10 @@ public interface LcdProc extends AutoCloseable, EventListenerProvider {
 			// }
 			// }
 
+			// lcdProc1.clientName("test");
+
 			MainMenu mainMenu = lcdProc1.mainMenu("main");
+			mainMenu.addAlpha("alpha").allow(AllowedCharGroups.NONE).allow("abc");
 			mainMenu.addAction("Exit").addEventListener((MenuEvent e) -> currentThread.interrupt());
 			mainMenu.addRing("Ring", 0, "first", "second", "third")
 					.addEventListener((MenuEvent e) -> System.out.println(e.toString()));

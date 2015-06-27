@@ -1,28 +1,29 @@
 package org.awi.jlcdproc.events;
 
-public class ListenEvent implements StateEvent {
+import org.awi.jlcdproc.commands.widget.Screen;
 
-	private final String screenId;
+/**
+ * Each time a {@link Screen} gets active, this event is sent by the LCDproc
+ * server
+ */
+public class ListenEvent extends StateEvent {
 
+	/**
+	 * Constructor 
+	 *
+	 * @param screenId ID of the {@link Screen} that is activated.
+	 */
 	public ListenEvent(String screenId) {
-	
-		this.screenId = screenId;
+
+		super(screenId);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.awi.jlcdproc.events.StateEvent#isActive()
+	 */
 	@Override
 	public boolean isActive() {
 
 		return true;
-	}
-	
-	@Override
-	public String getScreenId() {
-		
-		return screenId;
-	}
-	
-	@Override
-	public String toString() {
-		return "ListenEvent [screenId=" + screenId + "]";
 	}
 }

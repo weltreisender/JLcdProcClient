@@ -5,12 +5,15 @@ import org.awi.jlcdproc.commands.CommandOption;
 import org.awi.jlcdproc.commands.Heartbeat;
 import org.awi.jlcdproc.commands.Priority;
 
+/**
+ * Helper class that provides static functions to define {@link Screen} options
+ */
 public class ScreenOption extends CommandOption {
 
 	private ScreenOption(String option, Object arg) {
 		super(option, arg);
 	}
-	
+
 	/**
 	 * Sets the LCDproc screen name
 	 * 
@@ -125,7 +128,7 @@ public class ScreenOption extends CommandOption {
 
 	public static final CommandOption heartbeatOn = heartbeat(Heartbeat.ON);
 	public static final CommandOption heartbeatOff = heartbeat(Heartbeat.OFF);
-	
+
 	/**
 	 * Changes the screen's backlight setting. If set to the default value
 	 * {@link Backlight#OPEN OPEN}, the state will be determined by the client's
@@ -195,30 +198,30 @@ public class ScreenOption extends CommandOption {
 	public static final CommandOption cursorOff = cursor(Cursor.OFF);
 	public static final CommandOption cursorBlock = cursor(Cursor.BLOCK);
 	public static final CommandOption cursorUnder = cursor(Cursor.UNDER);
-	
+
 	/**
-	 * Set the cursor's x coordinate. Coordinates are always
-	 * 1-based. So the default top-left corner is denoted by (1,1).
+	 * Set the cursor's x coordinate. Coordinates are always 1-based. So the
+	 * default top-left corner is denoted by (1,1).
 	 * 
-	 * @param x 
+	 * @param x
 	 * @return this
 	 */
 	public static CommandOption cursorX(int x) {
-		
+
 		return new ScreenOption("-cursor_x", x);
 	}
 
 	/**
-	 * Set the cursor's y coordinate. Coordinates are always
-	 * 1-based. So the default top-left corner is denoted by (1,1).
+	 * Set the cursor's y coordinate. Coordinates are always 1-based. So the
+	 * default top-left corner is denoted by (1,1).
 	 * 
 	 * @param y
 	 * @return this
 	 * @throws Exception
-	 * if t
+	 *             if t
 	 */
 	public static CommandOption cursorY(int y) {
-		
+
 		return new ScreenOption("-cursor_y", y);
 	}
 }

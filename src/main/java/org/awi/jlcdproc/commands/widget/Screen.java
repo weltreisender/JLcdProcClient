@@ -290,6 +290,11 @@ public class Screen extends Command implements EventListener {
 		return set(ScreenOption.cursorX(x), ScreenOption.cursorY(y));
 	}
 
+	/**
+	 * Remove the screen
+	 *  
+	 * @throws Exception
+	 */
 	public void delete() throws Exception {
 
 		lcdProc.removeEventListener(this);
@@ -297,91 +302,211 @@ public class Screen extends Command implements EventListener {
 		send(SCREEN_DEL, params(screenId));
 	}
 
+	/**
+	 * Creates a new {@link StringWidget}
+	 * 
+	 * @return {@link StringWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public StringWidget stringWidget() throws Exception {
 
 		return stringWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Creates a new {@link StringWidget} with the given widget ID.
+	 * 
+	 * @return {@link StringWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public StringWidget stringWidget(String widgetId) throws Exception {
 
 		return new StringWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link TitleWidget}
+	 * 
+	 * @return {@link TitleWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public TitleWidget titleWidget() throws Exception {
 
 		return titleWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link TitleWidget} with the given widget ID
+	 * 
+	 * @return {@link TitleWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public TitleWidget titleWidget(String widgetId) throws Exception {
 
 		return new TitleWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link VBarWidget}
+	 * 
+	 * @return {@link VBarWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public VBarWidget vbarWidget() throws Exception {
 
 		return vbarWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link VBarWidget} with the given widget ID
+	 * 
+	 * @return {@link VBarWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public VBarWidget vbarWidget(String widgetId) throws Exception {
 
 		return new VBarWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link HBarWidget}
+	 * 
+	 * @return {@link HBarWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public HBarWidget hbarWidget() throws Exception {
 
 		return hbarWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link HBarWidget} with the given widget ID
+	 * 
+	 * @return {@link HBarWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public HBarWidget hbarWidget(String widgetId) throws Exception {
 
 		return new HBarWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link IconWidget}
+	 * 
+	 * @return {@link IconWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public IconWidget iconWidget() throws Exception {
 
 		return iconWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link IconWidget} with the given widget ID
+	 * 
+	 * @return {@link IconWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public IconWidget iconWidget(String widgetId) throws Exception {
 
 		return new IconWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link ScrollerWidget}
+	 * 
+	 * @return {@link ScrollerWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public ScrollerWidget scrollerWidget() throws Exception {
 
 		return scrollerWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link ScrollerWidget} with the given widget ID
+	 * 
+	 * @return {@link ScrollerWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public ScrollerWidget scrollerWidget(String widgetId) throws Exception {
 
 		return new ScrollerWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link FrameWidget}
+	 * 
+	 * @return {@link FrameWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public FrameWidget frameWidget() throws Exception {
 
 		return frameWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link FrameWidget} with the given widget ID
+	 * 
+	 * @return {@link FrameWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public FrameWidget frameWidget(String widgetId) throws Exception {
 
 		return new FrameWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Create a new {@link NumWidget}
+	 * 
+	 * @return {@link NumWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public NumWidget numWidget() throws Exception {
 
 		return numWidget(Integer.toString(currentWidgetId++));
 	}
 
+	/**
+	 * Create a new {@link NumWidget} with the given widget ID
+	 * 
+	 * @return {@link NumWidget}
+	 * 
+	 * @throws Exception
+	 */
 	public NumWidget numWidget(String widgetId) throws Exception {
 
 		return new NumWidget(lcdProc, this, widgetId);
 	}
 
+	/**
+	 * Getter
+	 * 
+	 * @return Screen ID
+	 */
 	public String getScreenId() {
 
 		return screenId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.awi.jlcdproc.events.EventListener#onEvent(org.awi.jlcdproc.events.Event)
+	 */
 	@Override
 	public void onEvent(Event event) {
 

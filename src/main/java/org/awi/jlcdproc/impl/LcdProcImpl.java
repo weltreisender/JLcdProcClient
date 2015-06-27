@@ -11,6 +11,8 @@ import java.util.concurrent.ThreadFactory;
 import org.awi.jlcdproc.LcdProc;
 import org.awi.jlcdproc.commands.Backlight;
 import org.awi.jlcdproc.commands.BacklightCommand;
+import org.awi.jlcdproc.commands.ClientName;
+import org.awi.jlcdproc.commands.CommandOption;
 import org.awi.jlcdproc.commands.Info;
 import org.awi.jlcdproc.commands.keys.Key;
 import org.awi.jlcdproc.commands.keys.KeyMode;
@@ -31,6 +33,8 @@ import org.slf4j.LoggerFactory;
  * This class acts as an interface to the Linux LCDproc server.
  */
 public class LcdProcImpl implements LcdProc, LcdProcInternal {
+
+	private static final String CLIENT_SET = "client_set";
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -87,10 +91,29 @@ public class LcdProcImpl implements LcdProc, LcdProcInternal {
 		executorService.shutdown();
 	}
 
-	// public void clientName(String name) throws Exception {
-	//
-	// connection.send(null, "client_set", "-name", name);
-	// }
+	/* (non-Javadoc)
+	 * @see org.awi.jlcdproc.LcdProc#clientName(java.lang.String)
+	 */
+	@Override
+	public void clientName(String name) throws Exception {
+
+		ClientName clientName = new ClientName(this);
+		
+		clientName.send(CLIENT_SET, new CommandOption("-name", name));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.awi.jlcdproc.impl.LcdProcIf#info()
+	 */
+	@Override
+	public String info() throws Exception {
+	
+		Info info = new Info(this);
+	
+		info.send();
+	
+		return ((DriverInfoEvent) info.getEvent()).getDriverInfo();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.awi.jlcdproc.impl.LcdProcIf#screen()
@@ -116,7 +139,7 @@ public class LcdProcImpl implements LcdProc, LcdProcInternal {
 	@Override
 	public MainMenu mainMenu(String name) {
 
-		return new MainMenu(this, connection, name);
+		return new MainMenu(this, name);
 	}
 
 	/* (non-Javadoc)
@@ -135,19 +158,6 @@ public class LcdProcImpl implements LcdProc, LcdProcInternal {
 	public Key addKey(KeyName key, KeyMode keyMode) throws Exception {
 
 		return new Key(this, key, keyMode);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.awi.jlcdproc.impl.LcdProcIf#info()
-	 */
-	@Override
-	public String info() throws Exception {
-
-		Info info = new Info(this);
-
-		info.send();
-
-		return ((DriverInfoEvent) info.getEvent()).getDriverInfo();
 	}
 
 	/* (non-Javadoc)

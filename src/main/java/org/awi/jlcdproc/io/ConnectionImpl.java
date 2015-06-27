@@ -16,31 +16,38 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ThreadFactory;
 
 import org.awi.jlcdproc.commands.Hello;
 import org.awi.jlcdproc.impl.LcdProcInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectionImpl implements AutoCloseable, Connection {
+/**
+ * Implementation of the {@link Connection} interface.
+ * 
+ * It uses Netty to establish the connection.
+ */
+public class ConnectionImpl implements Connection {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private String host = "localhost";
+	private final String host;
 
-	private int port = 13666;
+	private final int port;
 
-	private LcdProcInternal lcdProc;
+	private final LcdProcInternal lcdProc;
 
 	private Channel channel;
 
 	private EventLoopGroup group;
 
-	private LcdProcHandler lcdProcHandler;
-
-	private CommandHandler commandHandler;
-
+	/**
+	 * Constructor
+	 * 
+	 * @param lcdProc
+	 * @param host
+	 * @param port
+	 */
 	public ConnectionImpl(LcdProcInternal lcdProc, String host, int port) {
 
 		super();
@@ -48,10 +55,6 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 		this.port = port;
 		this.lcdProc = lcdProc;
 	}
-
-	// public LcdProc getLcdProc() {
-	// return lcdProc;
-	// }
 
 	/*
 	 * (non-Javadoc)
@@ -61,16 +64,12 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 	@Override
 	public void connect() throws Exception {
 
-		Bootstrap bootstrap = new Bootstrap();
-
-		commandHandler = new CommandHandler(lcdProc);
-		lcdProcHandler = new LcdProcHandler();
-
-		ThreadFactory factory = new DefaultThreadFactory("netty");
-		group = new NioEventLoopGroup(2, factory);
+		group = new NioEventLoopGroup(2, new DefaultThreadFactory("netty"));
 
 		try {
 
+			// Setup netty client channel
+			Bootstrap bootstrap = new Bootstrap();
 			channel = bootstrap.group(group)
 					.channel(NioSocketChannel.class)
 					.option(ChannelOption.AUTO_READ, true)
@@ -82,18 +81,20 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 									.addLast(new DelimiterBasedFrameDecoder(256, Delimiters.lineDelimiter()))
 									.addLast(new StringDecoder())
 									.addLast(new StringEncoder())
-									.addLast(lcdProcHandler)
-									.addLast(commandHandler);
+									.addLast(new LcdProcEventHandler())
+									.addLast(new CommandHandler(lcdProc));
 						};
 					})
 					.connect(new InetSocketAddress(host, port))
 					.sync()
 					.channel();
 		} catch (Exception e) {
+
 			close();
 			throw new LcdProcConnectException(host, port);
 		}
 
+		// Send LCDProc's "hello" command
 		try {
 
 			new Hello(lcdProc).send();
@@ -104,6 +105,9 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.AutoCloseable#close()
+	 */
 	@Override
 	public void close() throws IOException {
 
@@ -126,6 +130,6 @@ public class ConnectionImpl implements AutoCloseable, Connection {
 	@Override
 	public void send(CommandHolder commandHolder) throws Exception {
 
-		channel.writeAndFlush(commandHolder).addListener(commandHolder.getCommand());
+		channel.writeAndFlush(commandHolder).addListener(commandHolder);
 	}
 }

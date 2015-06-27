@@ -1,11 +1,13 @@
-package org.awi.jlcdproc.impl;
+package org.awi.jlcdproc.events;
 
 import org.awi.jlcdproc.commands.keys.Key;
 import org.awi.jlcdproc.commands.menu.MenuItem;
 import org.awi.jlcdproc.commands.widget.Screen;
-import org.awi.jlcdproc.events.Event;
-import org.awi.jlcdproc.events.EventListener;
 
+/**
+ * Implementations of this interface allow to add and remove event listeners
+ * that are called upon events emitted by the LCDProc server.
+ */
 public interface EventListenerProvider {
 
 	/**
@@ -29,13 +31,4 @@ public interface EventListenerProvider {
 	 *            {@link EventListener} to remove
 	 */
 	public abstract void removeEventListener(EventListener eventListener);
-
-	/**
-	 * Fire the given {@link Event} to all listeners asynchronously
-	 * 
-	 * @param event
-	 *            {@link Event} to fire
-	 */
-	public abstract void fireEvent(Event event);
-
 }
